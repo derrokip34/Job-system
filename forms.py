@@ -77,8 +77,7 @@ def register_page():
         
         gender_label = Label(user_details_window,text="Gender",background="grey",fg="whitesmoke",font=("Arial",12))
         gender_label.place(x=20,y=90)
-        global gender_var
-        gender_var = StringVar(None,"M")
+        gender_var = StringVar(user_details_window)
         Radiobutton(user_details_window,text="Male",variable=gender_var,value="M",background="grey").place(x=160,y=90)
         Radiobutton(user_details_window,text="Female",variable=gender_var,value="F",background="grey").place(x=220,y=90)
 
@@ -148,7 +147,7 @@ def register_page():
                 email_msg = "Invalid Email"
                 messagebox.showinfo('message',email_msg)
                 return
-            if len(password) < 8:
+            elif len(password) < 8:
                 password_msg = "Password must be longer than eight characters"
                 messagebox.showinfo('message',password_msg)
                 return
@@ -164,21 +163,25 @@ def register_page():
                 password_msg = "Passwords must match"
                 messagebox.showinfo('message',password_msg)
                 return
-            global registration_data
-            registration_data = {
-                "first_name": first_name,
-                "last_name": last_name,
-                "gender": gender,
-                "dob": date_of_birth,
-                "area": area,
-                "phone_no": phone_num,
-                "email": email,
-                "category": category,
-                "password":hashed_password
-            }
-            job_seeker = JobSeeker()
-            job_seeker.save_data(registration_data["first_name"],registration_data["last_name"],registration_data["email"],registration_data["phone_no"],registration_data["gender"],registration_data["dob"],registration_data["category"],registration_data["area"],registration_data["password"])
-
+            else:
+                global registration_data
+                registration_data = {
+                    "first_name": first_name,
+                    "last_name": last_name,
+                    "gender": gender,
+                    "dob": date_of_birth,
+                    "area": area,
+                    "phone_no": phone_num,
+                    "email": email,
+                    "category": category,
+                    "password":hashed_password
+                }
+                job_seeker = JobSeeker()
+                job_seeker.save_data(registration_data["first_name"],registration_data["last_name"],registration_data["email"],registration_data["phone_no"],registration_data["gender"],registration_data["dob"],registration_data["category"],registration_data["area"],registration_data["password"])
+                messagebox.showinfo('message',"User succesfully added\nProceed to Login")
+                user_details_window.destroy()
+                register_frame.destroy()
+                login_page()
 
         user_details_window.mainloop()
 
