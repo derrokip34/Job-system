@@ -1,8 +1,8 @@
 from tkinter import *
-from tkinter.ttk import Combobox
+from tkinter import messagebox
 from ttkwidgets.autocomplete import AutocompleteCombobox
 from models import JobSeeker
-import bcrypt
+import bcrypt,re
 
 home_pg = Tk()
 home_pg.geometry("900x500")
@@ -135,16 +135,45 @@ def register_page():
             hashed_password = new_hashed.decode('utf-8')
 
         def validate_registration_data():
+            first_name = fname_entry.get()
+            last_name = lname_entry.get()
+            gender = gender_var.get()
+            area = area_entry.get()
+            phone_num = phone_no_entry.get()
+            email = email_entry.get()
+            category = specialty_entry.get()
+            password = password_entry.get()
+            confirm_password = confirm_password_entry.get()
+            if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
+                email_msg = "Invalid Email"
+                messagebox.showinfo('message',email_msg)
+                return
+            if len(password) < 8:
+                password_msg = "Password must be longer than eight characters"
+                messagebox.showinfo('message',password_msg)
+                return
+            elif not re.search(r"[A-Z]",password):
+                password_msg = "Password must have at least one uppercase letter"
+                messagebox.showinfo('message',password_msg)
+                return
+            elif not re.search(r"\d",password):
+                password_msg = "Password must have at least one number"
+                messagebox.showinfo('message',password_msg)
+                return
+            elif password != confirm_password:
+                password_msg = "Passwords must match"
+                messagebox.showinfo('message',password_msg)
+                return
             global registration_data
             registration_data = {
-                "first_name": fname_entry.get(),
-                "last_name":lname_entry.get(),
-                "gender":gender_var.get(),
-                "dob":date_of_birth,
-                "area":area_entry.get(),
-                "phone_no":phone_no_entry.get(),
-                "email":email_entry.get(),
-                "category":specialty_entry.get(),
+                "first_name": first_name,
+                "last_name": last_name,
+                "gender": gender,
+                "dob": date_of_birth,
+                "area": area,
+                "phone_no": phone_num,
+                "email": email,
+                "category": category,
                 "password":hashed_password
             }
             job_seeker = JobSeeker()
