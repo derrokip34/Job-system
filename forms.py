@@ -1,7 +1,8 @@
 from tkinter import *
-from new import User
 from tkinter.ttk import Combobox
 from ttkwidgets.autocomplete import AutocompleteCombobox
+from models import JobSeeker
+import bcrypt
 
 home_pg = Tk()
 home_pg.geometry("900x500")
@@ -76,10 +77,10 @@ def register_page():
         
         gender_label = Label(user_details_window,text="Gender",background="grey",fg="whitesmoke",font=("Arial",12))
         gender_label.place(x=20,y=90)
-        global var
-        var = StringVar(None,"M")
-        Radiobutton(user_details_window,text="Male",variable=var,value="M",background="grey").place(x=160,y=90)
-        Radiobutton(user_details_window,text="Female",variable=var,value="F",background="grey").place(x=220,y=90)
+        global gender_var
+        gender_var = StringVar(None,"M")
+        Radiobutton(user_details_window,text="Male",variable=gender_var,value="M",background="grey").place(x=160,y=90)
+        Radiobutton(user_details_window,text="Female",variable=gender_var,value="F",background="grey").place(x=220,y=90)
 
         dob_label = Label(user_details_window,text="Date of Birth",background="grey",fg="whitesmoke",font=("Arial",12))
         dob_label.place(x=20,y=130)
@@ -115,8 +116,40 @@ def register_page():
         confirm_password_entry = Entry(user_details_window,width=25,show="*")
         confirm_password_entry.place(x=160,y=270)
 
-        register_button = Button(user_details_window,background="lavender",width=20,height=2,text="Register",command=lambda:[user_details_window.destroy(),register_frame.destroy(),home()])
+        register_button = Button(user_details_window,background="lavender",width=20,height=2,text="Register",command=lambda:[get_date_of_birth(),hash_password(),validate_registration_data()])
         register_button.place(x=250,y=320)
+
+        def get_date_of_birth():
+            day_of_birth = day_entry.get()
+            month_of_birth = month_entry.get()
+            year_of_birth = year_entry.get()
+            global date_of_birth
+            date_of_birth = day_of_birth + "/" + month_of_birth + "/" + year_of_birth
+
+        def hash_password():
+            salt = b'$2b$12$SJv9T2zvJFjI6bYtibhZv.'
+            new_password = password_entry.get()
+            new_pass_bytes = new_password.encode('utf-8')
+            new_hashed = bcrypt.hashpw(new_pass_bytes,salt)
+            global hashed_password
+            hashed_password = new_hashed.decode('utf-8')
+
+        def validate_registration_data():
+            global registration_data
+            registration_data = {
+                "first_name": fname_entry.get(),
+                "last_name":lname_entry.get(),
+                "gender":gender_var.get(),
+                "dob":date_of_birth,
+                "area":area_entry.get(),
+                "phone_no":phone_no_entry.get(),
+                "email":email_entry.get(),
+                "category":specialty_entry.get(),
+                "password":hashed_password
+            }
+            job_seeker = JobSeeker()
+            job_seeker.save_data(registration_data["first_name"],registration_data["last_name"],registration_data["email"],registration_data["phone_no"],registration_data["gender"],registration_data["dob"],registration_data["category"],registration_data["area"],registration_data["password"])
+
 
         user_details_window.mainloop()
 
@@ -136,23 +169,6 @@ def register_page():
     areas = ["Balozi Road","Chuna"]
     area_entry = AutocompleteCombobox(name_frame,completevalues=areas)
     area_entry.pack(fill=NONE,anchor=CENTER,pady=10)
-
-
-    def add_registration_data():
-        global registration_data
-        registration_data = {
-            "first_name": fname_entry.get(),
-            "last_name":lname_entry.get(),
-            "gender":"",
-            "dob":"",
-            "county":"",
-            "subconty":"",
-            "area":"",
-            "phone_no":"",
-            "email":"",
-            "specialty":""
-        }
-        return registration_data
 
     submit_button = Button(name_frame,background="lavender",width=30,height=2,text="Enter personal details",command=lambda: [user_details_form()])
     submit_button.pack(fill=NONE,anchor=CENTER,pady=10)
@@ -228,4 +244,4 @@ def job_creation_form():
     Button(menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3).place(x=10,y=330)
     home_pg.mainloop()
 
-job_creation_form()
+register_page()
