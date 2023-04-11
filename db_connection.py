@@ -1,3 +1,5 @@
+#Author: Derrick Kiprop <derrickip34@gmail.com>
+#Date:   Mon Apr 10
 import psycopg2
 
 def save_to_db(data):
@@ -8,3 +10,15 @@ def save_to_db(data):
     conn.commit()
     cur.close()
     conn.close()
+
+def get_areas():
+    conn = psycopg2.connect(database='csc_227',user='postgres',host='localhost',port='5432',password='enkay2008')
+    cur = conn.cursor()
+    query = "SELECT area_name FROM areas;"
+    cur.execute(query)
+    areas = cur.fetchall()
+    columns = [area[0] for area in areas]
+    conn.commit()
+    cur.close()
+    conn.close()
+    return columns
