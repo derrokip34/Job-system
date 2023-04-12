@@ -1,9 +1,10 @@
 #Author: Derrick Kiprop <derrickip34@gmail.com>
 #Date:   Mon Apr 10
 import psycopg2
+import bcrypt
 
 def save_to_db(data):
-    conn = psycopg2.connect(database='csc_227',user='postgres',host='localhost',port='5432',password='enkay2008')
+    conn = psycopg2.connect(database='csc_227_project',user='postgres',host='localhost',port='5432',password='enkay2008')
     cur = conn.cursor()
     query = "INSERT INTO job_seekers (first_name,last_name,email,phone_num,gender,dob,category,area,password) VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s);"
     cur.execute(query, (data["first_name"],data["last_name"],data["email"],data["phone_no"],data["gender"],data["dob"],data["category"],data["area"],data["password"]))
@@ -12,7 +13,7 @@ def save_to_db(data):
     conn.close()
 
 def get_areas():
-    conn = psycopg2.connect(database='csc_227',user='postgres',host='localhost',port='5432',password='enkay2008')
+    conn = psycopg2.connect(database='csc_227_project',user='postgres',host='localhost',port='5432',password='enkay2008')
     cur = conn.cursor()
     query = "SELECT area_name FROM areas;"
     cur.execute(query)
@@ -22,3 +23,28 @@ def get_areas():
     cur.close()
     conn.close()
     return columns
+
+def hash_password(password):
+    salt = b'$2b$12$SJv9T2zvJFjI6bYtibhZv.'
+    new_pass_bytes = password.encode('utf-8')
+    new_hashed = bcrypt.hashpw(new_pass_bytes,salt)
+    global hashed_password
+    hashed_password = new_hashed.decode('utf-8')
+    return hashed_password
+
+def get_user(email,input_password):
+    new_password = hash_password(input_password)
+    conn = psycopg2.connect(database='csc_227_project',user='postgres',host='localhost',port='5432',password='enkay2008')
+    cur = conn.cursor()
+    query = "SELECT first_name,last_name FROM job_seekers WHERE email=%s AND password=%s;"
+    cur.execute(query,(email,new_password))
+    user = cur.fetchone()
+    if user is None:
+        query = "SELECT first_name,last_name FROM job_posters WHERE email=%s AND password=%s;"
+        cur.execute(query,(email,new_password))
+        user = cur.fetchone()
+
+    conn.commit()
+    cur.close()
+    conn.close()
+    return user

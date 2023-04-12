@@ -1,9 +1,10 @@
 from tkinter import *
 from tkinter import messagebox
 from ttkwidgets.autocomplete import AutocompleteCombobox
-from models import JobSeeker
+from models import User
 import bcrypt,re
 
+user = User()
 home_pg = Tk()
 home_pg.geometry("900x500")
 home_pg.configure(background="gray")
@@ -37,10 +38,26 @@ def login_page():
     form_frame.pack(expand=True,fill=BOTH,padx=20,pady=20)
     Label(form_frame,fg="whitesmoke",font=("Arial",20),background="gray",text="Login Form").pack(fill=NONE,anchor=CENTER,pady=30)
     Label(form_frame,fg="whitesmoke",font=("Arial",12),background="gray",text="Email Address").pack(fill=NONE,anchor=CENTER)
-    Entry(form_frame,width=30).pack(fill=NONE,anchor=CENTER,pady=10)
+    login_email_entry = Entry(form_frame,width=30)
+    login_email_entry.pack(fill=NONE,anchor=CENTER,pady=10)
     Label(form_frame,fg="whitesmoke",font=("Arial",12),background="gray",text="Password").pack(fill=BOTH,anchor=CENTER)
-    Entry(form_frame,width=30,show="*").pack(fill=NONE,anchor=CENTER,pady=10)
-    Button(form_frame,background="grey",width=10,text="Login").pack(fill=NONE,anchor=CENTER,pady=30)
+    login_password_entry = Entry(form_frame,width=30)
+    login_password_entry.pack(fill=NONE,anchor=CENTER,pady=10)
+    def user_login():
+        input_password = login_password_entry.get()
+        input_email = login_email_entry.get()
+        login_user = user.login(input_email,input_password)
+        if login_user is not None:
+            msg = login_user[0] + " " + login_user[1] + " successfully logged in"
+            messagebox.showinfo('message',msg)
+            form_frame.destroy()
+            home()
+        else:
+            msg1 = "No such user found"
+            messagebox.showinfo('message',msg1)
+    
+    Button(form_frame,background="grey",width=10,text="Login",command=lambda:[user_login()]).pack(fill=NONE,anchor=CENTER,pady=30)
+
 
     #Navigation buttons
     Button(menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3,command=lambda: [form_frame.destroy(),home()]).place(x=10,y=10)
@@ -176,8 +193,7 @@ def register_page():
                     "category": category,
                     "password":hashed_password
                 }
-                job_seeker = JobSeeker()
-                job_seeker.save_data(registration_data["first_name"],registration_data["last_name"],registration_data["email"],registration_data["phone_no"],registration_data["gender"],registration_data["dob"],registration_data["category"],registration_data["area"],registration_data["password"])
+                user.user_registration(registration_data["first_name"],registration_data["last_name"],registration_data["email"],registration_data["phone_no"],registration_data["gender"],registration_data["dob"],registration_data["category"],registration_data["area"],registration_data["password"])
                 messagebox.showinfo('message',"User succesfully added\nProceed to Login")
                 user_details_window.destroy()
                 register_frame.destroy()
@@ -276,4 +292,4 @@ def job_creation_form():
     Button(menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3).place(x=10,y=330)
     home_pg.mainloop()
 
-register_page()
+login_page()
