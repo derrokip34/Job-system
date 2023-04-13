@@ -8,6 +8,7 @@ import bcrypt,re
 session = {
     "username": None,
     "session_id": None,
+    "user_type": None,
     "logged_in": False
 }
 user = User()
@@ -20,7 +21,7 @@ menu_bar.pack(side=LEFT)
 login_frame = Frame(home_pg,bg="wheat",borderwidth=10,width=550,height=1280)
 login_frame.pack(expand=True,fill=BOTH)
 
-global fname_entry,lname_entry,registration_data
+#global fname_entry,lname_entry,registration_data
 
 def home():
     home_pg.title("Home")
@@ -30,6 +31,124 @@ def home():
     form_frame.pack(expand=True,fill=BOTH,padx=20,pady=20)
     print(session["username"])
     print(session["session_id"])
+
+    if session["logged_in"] is False:
+        Button(form_frame,text="Job Seeker",command=lambda:[register_page()]).place(x=100,y=30)
+        Button(form_frame,text="Job Poster",command=lambda:[job_poster_form()]).place(x=20,y=30)
+
+    def job_poster_form():
+        user_details_window = Tk()
+        user_details_window.geometry('700x400')
+        user_details_window.configure(background="gray")
+        f_name_label=Label(user_details_window,text="First Name",background="grey",fg="whitesmoke",font=("Arial",12))
+        f_name_label.place(x=20,y=50)
+        fname_entry=Entry(user_details_window,width=30)
+        fname_entry.place(x=160,y=50)
+        l_name_label=Label(user_details_window,fg="whitesmoke",font=("Arial",12),background="gray",text="    Last Name")
+        l_name_label.place(x=310,y=50)
+        lname_entry=Entry(user_details_window,width=30)
+        lname_entry.place(x=420,y=50)
+        
+        gender_label = Label(user_details_window,text="Gender",background="grey",fg="whitesmoke",font=("Arial",12))
+        gender_label.place(x=20,y=90)
+        gender_var = StringVar(user_details_window)
+        Radiobutton(user_details_window,text="Male",variable=gender_var,value="M",background="grey").place(x=160,y=90)
+        Radiobutton(user_details_window,text="Female",variable=gender_var,value="F",background="grey").place(x=220,y=90)
+        dob_label = Label(user_details_window,text="Date of Birth",background="grey",fg="whitesmoke",font=("Arial",12))
+        dob_label.place(x=20,y=130)
+        day_entry = Entry(user_details_window,width=5)
+        day_entry.place(x=160,y=130)
+        day_label = Label(user_details_window,text="DD",background="grey",fg="whitesmoke",font=("Arial",12))
+        day_label.place(x=160,y=150)
+        month_entry = Entry(user_details_window,width=5)
+        month_entry.place(x=200,y=130)
+        month_label = Label(user_details_window,text="MM",background="grey",fg="whitesmoke",font=("Arial",12))
+        month_label.place(x=200,y=150)
+        year_entry = Entry(user_details_window,width=8)
+        year_entry.place(x=240,y=130)
+        year_label = Label(user_details_window,text="YYYY",background="grey",fg="whitesmoke",font=("Arial",12))
+        year_label.place(x=240,y=150)
+        phone_no_label=Label(user_details_window,text="Phone Number",background="grey",fg="whitesmoke",font=("Arial",12))
+        phone_no_label.place(x=20,y=190)
+        phone_no_entry=Entry(user_details_window,width=20)
+        phone_no_entry.place(x=160,y=190)
+        email_label = Label(user_details_window,text="Email",background="grey",fg="whitesmoke",font=("Arial",12))
+        email_label.place(x=310,y=190)
+        email_entry = Entry(user_details_window,width=25)
+        email_entry.place(x=420,y=190)
+        
+        password_label = Label(user_details_window,text="Password",background="grey",fg="whitesmoke",font=("Arial",12))
+        password_label.place(x=20,y=230)
+        password_entry = Entry(user_details_window,width=25,show="*")
+        password_entry.place(x=160,y=230)
+        confirm_password_label = Label(user_details_window,text="Confirm Password",background="grey",fg="whitesmoke",font=("Arial",12))
+        confirm_password_label.place(x=20,y=270)
+        confirm_password_entry = Entry(user_details_window,width=25,show="*")
+        confirm_password_entry.place(x=160,y=270)
+        register_button = Button(user_details_window,background="lavender",width=20,height=2,text="Register",command=lambda:[get_date_of_birth(),hash_password(),validate_registration_data()])
+        register_button.place(x=250,y=320)
+
+        def get_date_of_birth():
+            day_of_birth = day_entry.get()
+            month_of_birth = month_entry.get()
+            year_of_birth = year_entry.get()
+            global date_of_birth
+            date_of_birth = day_of_birth + "/" + month_of_birth + "/" + year_of_birth
+
+        def hash_password():
+            salt = b'$2b$12$SJv9T2zvJFjI6bYtibhZv.'
+            new_password = password_entry.get()
+            new_pass_bytes = new_password.encode('utf-8')
+            new_hashed = bcrypt.hashpw(new_pass_bytes,salt)
+            global hashed_password
+            hashed_password = new_hashed.decode('utf-8')
+
+        def validate_registration_data():
+            first_name = fname_entry.get()
+            last_name = lname_entry.get()
+            gender = gender_var.get()
+            phone_num = phone_no_entry.get()
+            email = email_entry.get()
+            password = password_entry.get()
+            confirm_password = confirm_password_entry.get()
+            if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
+                email_msg = "Invalid Email"
+                messagebox.showinfo('message',email_msg)
+                return
+            elif len(password) < 8:
+                password_msg = "Password must be longer than eight characters"
+                messagebox.showinfo('message',password_msg)
+                return
+            elif not re.search(r"[A-Z]",password):
+                password_msg = "Password must have at least one uppercase letter"
+                messagebox.showinfo('message',password_msg)
+                return
+            elif not re.search(r"\d",password):
+                password_msg = "Password must have at least one number"
+                messagebox.showinfo('message',password_msg)
+                return
+            elif password != confirm_password:
+                password_msg = "Passwords must match"
+                messagebox.showinfo('message',password_msg)
+                return
+            else:
+                global registration_data
+                registration_data = {
+                    "first_name": first_name,
+                    "last_name": last_name,
+                    "gender": gender,
+                    "dob": date_of_birth,
+                    "phone_no": phone_num,
+                    "email": email,
+                    "password":hashed_password
+                }
+                user.job_poster_registration(registration_data["first_name"],registration_data["last_name"],registration_data["email"],registration_data["phone_no"],registration_data["gender"],registration_data["dob"],registration_data["password"])
+                messagebox.showinfo('message',"User succesfully added\nProceed to Login")
+                user_details_window.destroy()
+                form_frame.destroy()
+                login_page()
+
+        user_details_window.mainloop()
 
     Button(menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3).place(x=10,y=10)
     Button(menu_bar,background="lavender",width=15,height=3,text="Login",fg="black",bd=3,command=lambda: [home_frame.destroy(),form_frame.destroy(),login_page()]).place(x=10,y=90)
@@ -68,11 +187,15 @@ def login_page():
     def user_login():
         input_password = login_password_entry.get()
         input_email = login_email_entry.get()
-        login_user = user.login(input_email,input_password)
+        login_user,user_type = user.login(input_email,input_password)
         if login_user is not None:
             session["username"] = login_user[6]
             session["logged_in"] = True
-            session["session_id"] = login_user[10]
+            if user_type is "job_seeker":
+                session["session_id"] = login_user[10]
+            else:
+                session["session_id"] = login_user[9]
+            session["user_type"] = user_type
             msg = login_user[1] + " " + login_user[2] +" successfully logged in"
             messagebox.showinfo('message',msg)
             form_frame.destroy()
@@ -319,4 +442,6 @@ def job_creation_form():
         Button(menu_bar,background="lavender",width=15,height=3,text="Logout",fg="black",bd=3).place(x=10,y=330)
     home_pg.mainloop()
 
-job_creation_form()
+
+
+home()
