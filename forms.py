@@ -45,12 +45,26 @@ def login_page():
     form_frame = Frame(login_frame,bg="gray",borderwidth=10,height=1280)
     form_frame.pack(expand=True,fill=BOTH,padx=20,pady=20)
     Label(form_frame,fg="whitesmoke",font=("Arial",20),background="gray",text="Login Form").pack(fill=NONE,anchor=CENTER,pady=30)
+    
     Label(form_frame,fg="whitesmoke",font=("Arial",12),background="gray",text="Email Address").pack(fill=NONE,anchor=CENTER)
     login_email_entry = Entry(form_frame,width=30)
     login_email_entry.pack(fill=NONE,anchor=CENTER,pady=10)
+    
     Label(form_frame,fg="whitesmoke",font=("Arial",12),background="gray",text="Password").pack(fill=BOTH,anchor=CENTER)
     login_password_entry = Entry(form_frame,width=30,show="*")
     login_password_entry.pack(fill=NONE,anchor=CENTER,pady=10)
+    
+    show_password_button = Button(form_frame,background="grey",text="Show Password",width=12,command=lambda:[toggle_show_password()])
+    show_password_button.pack(fill=NONE,anchor=CENTER,pady=10)
+
+    def toggle_show_password():
+        if login_password_entry.cget("show") == "":
+            login_password_entry.config(show="*")
+            show_password_button.config(text="Show Password")
+        else:
+            login_password_entry.config(show="")
+            show_password_button.config(text="Hide Password")
+
     def user_login():
         input_password = login_password_entry.get()
         input_email = login_email_entry.get()
