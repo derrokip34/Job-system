@@ -1,7 +1,7 @@
-from db_connection import save_to_db,get_user
+from db_connection import save_job_seeker_to_db,get_user
 
 class User:
-    def user_registration(self,first_name,last_name,email,phone_num,gender,dob,category,area,password):
+    def job_seeker_registration(self,first_name,last_name,email,phone_num,gender,dob,category,area,password):
         registration_data = {
             "first_name": first_name,
             "last_name": last_name,
@@ -13,7 +13,7 @@ class User:
             "category": category,
             "password": password
             }
-        save_to_db(registration_data)
+        save_job_seeker_to_db(registration_data)
 
     def login(self,email,password):
         logged_in_user = get_user(email,password)

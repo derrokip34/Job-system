@@ -4,6 +4,12 @@ from ttkwidgets.autocomplete import AutocompleteCombobox
 from models import User
 import bcrypt,re
 
+
+session = {
+    "username": None,
+    "session_id": None,
+    "logged_in": False
+}
 user = User()
 home_pg = Tk()
 home_pg.geometry("900x500")
@@ -22,17 +28,19 @@ def home():
     home_frame.pack(expand=True,fill=BOTH)
     form_frame = Frame(login_frame,bg="gray",borderwidth=10,height=1280)
     form_frame.pack(expand=True,fill=BOTH,padx=20,pady=20)
+    print(session["username"])
+    print(session["session_id"])
 
     Button(menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3).place(x=10,y=10)
     Button(menu_bar,background="lavender",width=15,height=3,text="Login",fg="black",bd=3,command=lambda: [home_frame.destroy(),form_frame.destroy(),login_page()]).place(x=10,y=90)
-    Button(menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3).place(x=10,y=170)
-    Button(menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3).place(x=10,y=250)
-    Button(menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3).place(x=10,y=330)
+    if session["logged_in"] is True:
+        Button(menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3).place(x=10,y=170)
+        Button(menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3).place(x=10,y=250)
+        Button(menu_bar,background="lavender",width=15,height=3,text="Logout",fg="black",bd=3).place(x=10,y=330)
     home_pg.mainloop()
 
 def login_page():
     home_pg.title("Login")
-    
     #Login Form starts here
     form_frame = Frame(login_frame,bg="gray",borderwidth=10,height=1280)
     form_frame.pack(expand=True,fill=BOTH,padx=20,pady=20)
@@ -41,14 +49,17 @@ def login_page():
     login_email_entry = Entry(form_frame,width=30)
     login_email_entry.pack(fill=NONE,anchor=CENTER,pady=10)
     Label(form_frame,fg="whitesmoke",font=("Arial",12),background="gray",text="Password").pack(fill=BOTH,anchor=CENTER)
-    login_password_entry = Entry(form_frame,width=30)
+    login_password_entry = Entry(form_frame,width=30,show="*")
     login_password_entry.pack(fill=NONE,anchor=CENTER,pady=10)
     def user_login():
         input_password = login_password_entry.get()
         input_email = login_email_entry.get()
         login_user = user.login(input_email,input_password)
         if login_user is not None:
-            msg = login_user[0] + " " + login_user[1] + " successfully logged in"
+            session["username"] = login_user[6]
+            session["logged_in"] = True
+            session["session_id"] = login_user[10]
+            msg = login_user[1] + " " + login_user[2] +" successfully logged in"
             messagebox.showinfo('message',msg)
             form_frame.destroy()
             home()
@@ -65,14 +76,14 @@ def login_page():
         Button(menu_bar,background="lavender",width=15,height=3,text="Register",fg="black",bd=3,command=lambda: [form_frame.destroy(),register_page()]).place(x=10,y=90)
     else:
         Button(menu_bar,background="lavender",width=15,height=3,text="Login",fg="black",bd=3).place(x=10,y=90)
-    Button(menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3).place(x=10,y=170)
-    Button(menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3).place(x=10,y=250)
-    Button(menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3).place(x=10,y=330)
+    if session["logged_in"] is True:
+        Button(menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3).place(x=10,y=170)
+        Button(menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3).place(x=10,y=250)
+        Button(menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3).place(x=10,y=330)
     home_pg.mainloop()
 
 def register_page():
     home_pg.title("Register")
-
     # Job Seeker Registration Form
     register_frame = Frame(login_frame,bg="gray",borderwidth=10,height=1280)
     register_frame.pack(expand=True,fill=BOTH,anchor=CENTER,padx=20,pady=20)
@@ -193,7 +204,7 @@ def register_page():
                     "category": category,
                     "password":hashed_password
                 }
-                user.user_registration(registration_data["first_name"],registration_data["last_name"],registration_data["email"],registration_data["phone_no"],registration_data["gender"],registration_data["dob"],registration_data["category"],registration_data["area"],registration_data["password"])
+                user.job_seeker_registration(registration_data["first_name"],registration_data["last_name"],registration_data["email"],registration_data["phone_no"],registration_data["gender"],registration_data["dob"],registration_data["category"],registration_data["area"],registration_data["password"])
                 messagebox.showinfo('message',"User succesfully added\nProceed to Login")
                 user_details_window.destroy()
                 register_frame.destroy()
@@ -226,9 +237,10 @@ def register_page():
         Button(menu_bar,background="lavender",width=15,height=3,text="Login",fg="black",bd=3,command=lambda: [register_frame.destroy(),login_page()]).place(x=10,y=90)
     else:
         Button(menu_bar,background="lavender",width=15,height=3,text="Register",fg="black",bd=3).place(x=10,y=90)
-    Button(menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3).place(x=10,y=170)
-    Button(menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3).place(x=10,y=250)
-    Button(menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3).place(x=10,y=330)
+    if session["logged_in"] is True:
+        Button(menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3).place(x=10,y=170)
+        Button(menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3).place(x=10,y=250)
+        Button(menu_bar,background="lavender",width=15,height=3,text="Logout",fg="black",bd=3).place(x=10,y=330)
     home_pg.mainloop()
 
 def job_creation_form():
@@ -287,9 +299,10 @@ def job_creation_form():
 
     Button(menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3).place(x=10,y=10)
     Button(menu_bar,background="lavender",width=15,height=3,text="Login",fg="black",bd=3,command=lambda: [home_frame.destroy(),form_frame.destroy(),login_page()]).place(x=10,y=90)
-    Button(menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3).place(x=10,y=170)
-    Button(menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3).place(x=10,y=250)
-    Button(menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3).place(x=10,y=330)
+    if session["logged_in"] is True:
+        Button(menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3).place(x=10,y=170)
+        Button(menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3).place(x=10,y=250)
+        Button(menu_bar,background="lavender",width=15,height=3,text="Logout",fg="black",bd=3).place(x=10,y=330)
     home_pg.mainloop()
 
-login_page()
+job_creation_form()
