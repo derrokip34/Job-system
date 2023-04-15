@@ -1,4 +1,4 @@
-from db_connection import save_job_seeker_to_db,save_job_poster_to_db,get_user
+from db_connection import *
 
 class User:
     def job_seeker_registration(self,first_name,last_name,email,phone_num,gender,dob,category,area,password):
@@ -30,3 +30,6 @@ class User:
     def login(self,email,password):
         logged_in_user,user_type = get_user(email,password)
         return logged_in_user,user_type
+    
+    def log_out(self,sessionid,usertype):
+        update_session(sessionid,usertype)

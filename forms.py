@@ -4,7 +4,6 @@ from ttkwidgets.autocomplete import AutocompleteCombobox
 from models import User
 import bcrypt,re
 
-
 session = {
     "username": None,
     "session_id": None,
@@ -16,25 +15,35 @@ home_pg = Tk()
 home_pg.geometry("900x500")
 home_pg.configure(background="gray")
 home_pg.resizable(0,0)
-menu_bar = Frame(home_pg,bg="dimgrey",width=150,height=1280)
-menu_bar.pack(side=LEFT)
-login_frame = Frame(home_pg,bg="wheat",borderwidth=10,width=550,height=1280)
-login_frame.pack(expand=True,fill=BOTH)
-
-#global fname_entry,lname_entry,registration_data
 
 def home():
     home_pg.title("Home")
+
+    home_menu_bar = Frame(home_pg,bg="dimgrey",width=150,height=1280)
+    home_menu_bar.pack(side=LEFT)
+
     home_frame = Frame(home_pg,bg="wheat",borderwidth=10,width=550,height=1280)
     home_frame.pack(expand=True,fill=BOTH)
-    form_frame = Frame(login_frame,bg="gray",borderwidth=10,height=1280)
+
+    form_frame = Frame(home_frame,bg="gray",borderwidth=10,height=1280)
     form_frame.pack(expand=True,fill=BOTH,padx=20,pady=20)
-    print(session["username"])
-    print(session["session_id"])
+
+    def logout():
+        user.log_out(session["session_id"],session["user_type"])
+        session["logged_in"] = False
+        session["session_id"] = None
+        session["user_type"] = None
+        session["username"] = None
+        home_frame.destroy()
+        home_menu_bar.destroy()
+        messagebox.showinfo("Log Out","User Logged out")
+        home()
 
     if session["logged_in"] is False:
-        Button(form_frame,text="Job Seeker",command=lambda:[register_page()]).place(x=100,y=30)
+        Button(form_frame,text="Job Seeker",command=lambda:[home_frame.destroy(),home_menu_bar.destroy(),registration_page()]).place(x=100,y=30)
         Button(form_frame,text="Job Poster",command=lambda:[job_poster_form()]).place(x=20,y=30)
+    else:
+        Button(form_frame,text="Logout",command=lambda:[logout()]).place(x=20,y=30)
 
     def job_poster_form():
         user_details_window = Tk()
@@ -145,24 +154,38 @@ def home():
                 user.job_poster_registration(registration_data["first_name"],registration_data["last_name"],registration_data["email"],registration_data["phone_no"],registration_data["gender"],registration_data["dob"],registration_data["password"])
                 messagebox.showinfo('message',"User succesfully added\nProceed to Login")
                 user_details_window.destroy()
-                form_frame.destroy()
+                home_frame.destroy()
+                home_menu_bar.destroy()
                 login_page()
 
         user_details_window.mainloop()
 
-    Button(menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3).place(x=10,y=10)
-    Button(menu_bar,background="lavender",width=15,height=3,text="Login",fg="black",bd=3,command=lambda: [home_frame.destroy(),form_frame.destroy(),login_page()]).place(x=10,y=90)
+    home_nav = Button(home_menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3)
+    home_nav.place(x=10,y=10)
+    login_nav = Button(home_menu_bar,background="lavender",width=15,height=3,text="Login",fg="black",bd=3,command=lambda: [home_frame.destroy(),home_menu_bar.destroy(),login_page()])
+    login_nav.place(x=10,y=90)
     if session["logged_in"] is True:
-        Button(menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3).place(x=10,y=170)
-        Button(menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3).place(x=10,y=250)
-        Button(menu_bar,background="lavender",width=15,height=3,text="Logout",fg="black",bd=3).place(x=10,y=330)
+        new1_nav = Button(home_menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3)
+        new1_nav.place(x=10,y=170)
+        new2_nav = Button(home_menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3)
+        new2_nav.place(x=10,y=250)
+        new3_nav = Button(home_menu_bar,background="lavender",width=15,height=3,text="Logout",fg="black",bd=3)
+        new3_nav.place(x=10,y=330)
+
     home_pg.mainloop()
 
 def login_page():
     home_pg.title("Login")
-    #Login Form starts here
+
+    login_menu_bar = Frame(home_pg,bg="dimgrey",width=150,height=1280)
+    login_menu_bar.pack(side=LEFT)
+
+    login_frame = Frame(home_pg,bg="wheat",borderwidth=10,width=550,height=1280)
+    login_frame.pack(expand=True,fill=BOTH)
+
     form_frame = Frame(login_frame,bg="gray",borderwidth=10,height=1280)
     form_frame.pack(expand=True,fill=BOTH,padx=20,pady=20)
+
     Label(form_frame,fg="whitesmoke",font=("Arial",20),background="gray",text="Login Form").pack(fill=NONE,anchor=CENTER,pady=30)
     
     Label(form_frame,fg="whitesmoke",font=("Arial",12),background="gray",text="Email Address").pack(fill=NONE,anchor=CENTER)
@@ -198,7 +221,8 @@ def login_page():
             session["user_type"] = user_type
             msg = login_user[1] + " " + login_user[2] +" successfully logged in"
             messagebox.showinfo('message',msg)
-            form_frame.destroy()
+            login_frame.destroy()
+            login_menu_bar.destroy()
             home()
         else:
             msg1 = "No such user found"
@@ -206,26 +230,31 @@ def login_page():
     
     Button(form_frame,background="grey",width=10,text="Login",command=lambda:[user_login()]).pack(fill=NONE,anchor=CENTER,pady=30)
 
-
-    #Navigation buttons
-    Button(menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3,command=lambda: [form_frame.destroy(),home()]).place(x=10,y=10)
-    if login_page:
-        Button(menu_bar,background="lavender",width=15,height=3,text="Register",fg="black",bd=3,command=lambda: [form_frame.destroy(),register_page()]).place(x=10,y=90)
-    else:
-        Button(menu_bar,background="lavender",width=15,height=3,text="Login",fg="black",bd=3).place(x=10,y=90)
+    home_nav = Button(login_menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3,command=lambda:[login_frame.destroy(),login_menu_bar.destroy(),home()])
+    home_nav.place(x=10,y=10)
+    reg_nav = Button(login_menu_bar,background="lavender",width=15,height=3,text="Register",fg="black",bd=3,command=lambda: [login_frame.destroy(),login_menu_bar.destroy(),registration_page()])
+    reg_nav.place(x=10,y=90)
     if session["logged_in"] is True:
-        Button(menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3).place(x=10,y=170)
-        Button(menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3).place(x=10,y=250)
-        Button(menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3).place(x=10,y=330)
+        new1_nav = Button(login_menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3)
+        new1_nav.place(x=10,y=170)
+        new2_nav = Button(login_menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3)
+        new2_nav.place(x=10,y=250)
+        new3_nav = Button(login_menu_bar,background="lavender",width=15,height=3,text="Logout",fg="black",bd=3)
+        new3_nav.place(x=10,y=330)
+
     home_pg.mainloop()
 
-def register_page():
-    home_pg.title("Register")
-    # Job Seeker Registration Form
-    register_frame = Frame(login_frame,bg="gray",borderwidth=10,height=1280)
-    register_frame.pack(expand=True,fill=BOTH,anchor=CENTER,padx=20,pady=20)
-    name_frame = Frame(register_frame,bg="gray")
-    name_frame.pack(fill=BOTH,expand=TRUE,anchor=CENTER)
+def registration_page():
+    home_pg.title("Login")
+
+    registration_menu_bar = Frame(home_pg,bg="dimgrey",width=150,height=1280)
+    registration_menu_bar.pack(side=LEFT)
+
+    registration_frame = Frame(home_pg,bg="wheat",borderwidth=10,width=550,height=1280)
+    registration_frame.pack(expand=True,fill=BOTH)
+
+    form_frame = Frame(registration_frame,bg="gray",borderwidth=10,height=1280)
+    form_frame.pack(expand=True,fill=BOTH,padx=20,pady=20)
 
     def user_details_form():
         user_details_window = Tk()
@@ -344,104 +373,70 @@ def register_page():
                 user.job_seeker_registration(registration_data["first_name"],registration_data["last_name"],registration_data["email"],registration_data["phone_no"],registration_data["gender"],registration_data["dob"],registration_data["category"],registration_data["area"],registration_data["password"])
                 messagebox.showinfo('message',"User succesfully added\nProceed to Login")
                 user_details_window.destroy()
-                register_frame.destroy()
+                registration_frame.destroy()
+                registration_menu_bar.destroy()
                 login_page()
 
         user_details_window.mainloop()
 
-    specialty_label = Label(name_frame,text="Choose a Category",background="grey",fg="whitesmoke",font=("Arial",12))
+    specialty_label = Label(form_frame,text="Choose a Category",background="grey",fg="whitesmoke",font=("Arial",12))
     specialty_label.pack(fill=NONE,anchor=CENTER,pady=10)
-    var2 = StringVar(name_frame)
+    var2 = StringVar(form_frame)
     var2.set("Delivery")
     categories0 = ["Delivery","Electrictian","Farming","Laundry Services"]
-    specialty_entry = AutocompleteCombobox(name_frame,completevalues=categories0)
+    specialty_entry = AutocompleteCombobox(form_frame,completevalues=categories0)
     specialty_entry.pack(fill=NONE,anchor=CENTER,pady=10)
 
     areas = ["Balozi Road","Chuna"]
-    area_label = Label(name_frame,text="Which area are you from",background="grey",fg="whitesmoke",font=("Arial",12))
+    area_label = Label(form_frame,text="Which area are you from",background="grey",fg="whitesmoke",font=("Arial",12))
     area_label.pack(fill=NONE,anchor=CENTER,pady=10)
-    var3 = StringVar(name_frame)
+    var3 = StringVar(form_frame)
     var3.set("Balozi Road")
     areas = ["Balozi Road","Chuna"]
-    area_entry = AutocompleteCombobox(name_frame,completevalues=areas)
+    area_entry = AutocompleteCombobox(form_frame,completevalues=areas)
     area_entry.pack(fill=NONE,anchor=CENTER,pady=10)
 
-    submit_button = Button(name_frame,background="lavender",width=30,height=2,text="Enter personal details",command=lambda: [user_details_form()])
+    submit_button = Button(form_frame,background="lavender",width=30,height=2,text="Enter personal details",command=lambda: [user_details_form()])
     submit_button.pack(fill=NONE,anchor=CENTER,pady=10)
 
-    Button(menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3,command=lambda: [register_frame.destroy(),home()]).place(x=10,y=10)
-    if register_page:
-        Button(menu_bar,background="lavender",width=15,height=3,text="Login",fg="black",bd=3,command=lambda: [register_frame.destroy(),login_page()]).place(x=10,y=90)
-    else:
-        Button(menu_bar,background="lavender",width=15,height=3,text="Register",fg="black",bd=3).place(x=10,y=90)
+    home_nav = Button(registration_menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3,command=lambda:[registration_frame.destroy(),registration_menu_bar.destroy(),home()])
+    home_nav.place(x=10,y=10)
+    login_nav = Button(registration_menu_bar,background="lavender",width=15,height=3,text="Login",fg="black",bd=3,command=lambda: [registration_frame.destroy(),registration_menu_bar.destroy(),login_page()])
+    login_nav.place(x=10,y=90)
     if session["logged_in"] is True:
-        Button(menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3).place(x=10,y=170)
-        Button(menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3).place(x=10,y=250)
-        Button(menu_bar,background="lavender",width=15,height=3,text="Logout",fg="black",bd=3).place(x=10,y=330)
+        new1_nav = Button(registration_menu_bar,background="lavender",width=15,height=3,text="Post Job",fg="black",bd=3)
+        new1_nav.place(x=10,y=170)
+        new2_nav = Button(registration_menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3)
+        new2_nav.place(x=10,y=250)
+        new3_nav = Button(registration_menu_bar,background="lavender",width=15,height=3,text="Logout",fg="black",bd=3)
+        new3_nav.place(x=10,y=330)
+
     home_pg.mainloop()
 
-def job_creation_form():
-    home_pg.title("Home")
-    home_frame = Frame(home_pg,bg="wheat",borderwidth=10,width=550,height=1280)
-    home_frame.pack(expand=True,fill=BOTH)
-    form_frame = Frame(login_frame,bg="gray",borderwidth=10,height=1280)
+def post_job_form():
+    home_pg.title("Login")
+
+    post_job_menu_bar = Frame(home_pg,bg="dimgrey",width=150,height=1280)
+    post_job_menu_bar.pack(side=LEFT)
+
+    post_job_frame = Frame(home_pg,bg="wheat",borderwidth=10,width=550,height=1280)
+    post_job_frame.pack(expand=True,fill=BOTH)
+
+    form_frame = Frame(post_job_frame,bg="gray",borderwidth=10,height=1280)
     form_frame.pack(expand=True,fill=BOTH,padx=20,pady=20)
 
-    category_label = Label(form_frame,text="Job Category ",background="grey",fg="whitesmoke",font=("Arial",12))
-    category_label.place(x=0,y=30)
-    var3 = StringVar(form_frame)
-    var3.set("Delivery")
-    categories = ["Delivery Person","Electrictian","Laundry Services"]
-    category_entry = AutocompleteCombobox(form_frame,completevalues=categories)
-    category_entry.place(x=150,y=30)
-
-    description_label = Label(form_frame,text="Job Description ",background="grey",fg="whitesmoke",font=("Arial",12))
-    description_label.place(x=0,y=70)
-    description_entry = Text(form_frame,width=25,height=5)
-    description_entry.place(x=150,y=70)
-
-    date_posted_label = Label(form_frame,text="Posted on ",background="grey",fg="whitesmoke",font=("Arial",12))
-    date_posted_label.place(x=0,y=165)
-    day_posted_entry = Entry(form_frame,width=5)
-    day_posted_entry.place(x=150,y=165)
-    day_posted_label = Label(form_frame,text="DD",background="grey",fg="whitesmoke",font=("Arial",12))
-    day_posted_label.place(x=150,y=185)
-    month_posted_entry = Entry(form_frame,width=5)
-    month_posted_entry.place(x=190,y=165)
-    month_posted_label = Label(form_frame,text="MM",background="grey",fg="whitesmoke",font=("Arial",12))
-    month_posted_label.place(x=190,y=185)
-    year_posted_entry = Entry(form_frame,width=8)
-    year_posted_entry.place(x=230,y=165)
-    year_posted_label = Label(form_frame,text="YYYY",background="grey",fg="whitesmoke",font=("Arial",12))
-    year_posted_label.place(x=230,y=185)
-
-    job_duration_label = Label(form_frame,text="Job length/duration",background="grey",fg="whitesmoke",font=("Arial",12))
-    job_duration_label.place(x=0,y=210)
-    global var4
-    var4 = StringVar(None,"S")
-    Radiobutton(form_frame,text="Small  (1-5 hours)",value="S",background="grey",variable=var4).place(x=160,y=210)
-    Radiobutton(form_frame,text="Medium (5-12 hours)",value="M",background="grey",variable=var4).place(x=160,y=230)
-    Radiobutton(form_frame,text="Large  (More than one working day)",value="L",background="grey",variable=var4).place(x=160,y=250)
-    
-    payment_label = Label(form_frame,text="Payment",background="grey",fg="whitesmoke",font=("Arial",12))
-    payment_label.place(x=0,y=280)
-    global var5
-    var5 = StringVar(None,"O")
-    Radiobutton(form_frame,text="One Time",value="O",background="grey",variable=var5).place(x=160,y=280)
-    Radiobutton(form_frame,text="Hourly",value="H",background="grey",variable=var5).place(x=160,y=300)
-    amount_label = Label(form_frame,text="Amount",background="grey",fg="whitesmoke",font=("Arial",12))
-    amount_label.place(x=0,y=340)
-    amount_entry = Entry(form_frame,width=10)
-    amount_entry.place(x=160,y=340)
-
-    Button(menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3).place(x=10,y=10)
-    Button(menu_bar,background="lavender",width=15,height=3,text="Login",fg="black",bd=3,command=lambda: [home_frame.destroy(),form_frame.destroy(),login_page()]).place(x=10,y=90)
+    home_nav = Button(post_job_menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3,command=lambda:[post_job_frame.destroy(),post_job_menu_bar.destroy(),home()])
+    home_nav.place(x=10,y=10)
+    login_nav = Button(post_job_menu_bar,background="lavender",width=15,height=3,text="Login",fg="black",bd=3,command=lambda: [post_job_frame.destroy(),post_job_menu_bar.destroy(),login_page()])
+    login_nav.place(x=10,y=90)
     if session["logged_in"] is True:
-        Button(menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3).place(x=10,y=170)
-        Button(menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3).place(x=10,y=250)
-        Button(menu_bar,background="lavender",width=15,height=3,text="Logout",fg="black",bd=3).place(x=10,y=330)
+        new1_nav = Button(post_job_menu_bar,background="lavender",width=15,height=3,text="Post Job",fg="black",bd=3)
+        new1_nav.place(x=10,y=170)
+        new2_nav = Button(post_job_menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3)
+        new2_nav.place(x=10,y=250)
+        new3_nav = Button(post_job_menu_bar,background="lavender",width=15,height=3,text="Logout",fg="black",bd=3)
+        new3_nav.place(x=10,y=330)
+
     home_pg.mainloop()
-
-
 
 home()

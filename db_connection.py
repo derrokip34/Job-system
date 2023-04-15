@@ -5,9 +5,8 @@ import psycopg2,bcrypt,uuid
 def save_job_seeker_to_db(data):
     conn = psycopg2.connect(database='csc_227_project',user='postgres',host='localhost',port='5432',password='enkay2008')
     cur = conn.cursor()
-    session_id = str(uuid.uuid4())
-    query = "INSERT INTO job_seekers (first_name,last_name,email,phone_num,gender,dob,category,area,password,session_id) VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s);"
-    cur.execute(query, (data["first_name"],data["last_name"],data["email"],data["phone_no"],data["gender"],data["dob"],data["category"],data["area"],data["password"],session_id))
+    query = "INSERT INTO job_seekers (first_name,last_name,email,phone_num,gender,dob,category,area,password) VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s);"
+    cur.execute(query, (data["first_name"],data["last_name"],data["email"],data["phone_no"],data["gender"],data["dob"],data["category"],data["area"],data["password"]))
     conn.commit()
     cur.close()
     conn.close()
@@ -16,8 +15,8 @@ def save_job_poster_to_db(data):
     conn = psycopg2.connect(database='csc_227_project',user='postgres',host='localhost',port='5432',password='enkay2008')
     cur = conn.cursor()
     session_id = str(uuid.uuid4())
-    query = "INSERT INTO job_posters (first_name,last_name,email,phone_num,gender,dob,password,session_id) VALUES(%s,%s,%s,%s,%s,%s,%s,%s);"
-    cur.execute(query, (data["first_name"],data["last_name"],data["email"],data["phone_no"],data["gender"],data["dob"],data["password"],session_id))
+    query = "INSERT INTO job_posters (first_name,last_name,email,phone_num,gender,dob,password) VALUES(%s,%s,%s,%s,%s,%s,%s);"
+    cur.execute(query, (data["first_name"],data["last_name"],data["email"],data["phone_no"],data["gender"],data["dob"],data["password"]))
     conn.commit()
     cur.close()
     conn.close()
@@ -46,13 +45,21 @@ def get_user(email,input_password):
     new_password = hash_password(input_password)
     conn = psycopg2.connect(database='csc_227_project',user='postgres',host='localhost',port='5432',password='enkay2008')
     cur = conn.cursor()
-    query = "SELECT * FROM job_seekers WHERE email=%s AND password=%s;"
-    cur.execute(query,(email,new_password))
+    query = """
+                UPDATE job_seekers SET session_id = %s WHERE  email = %s AND password = %s;
+                SELECT * FROM job_seekers WHERE email = %s AND password = %s;
+            
+            """
+    session_id = str(uuid.uuid4())
+    cur.execute(query,(session_id,email,new_password,email,new_password))
     user = cur.fetchone()
     user_type = "job_seeker"
     if user is None:
-        query = "SELECT * FROM job_posters WHERE email=%s AND password=%s;"
-        cur.execute(query,(email,new_password))
+        query = """
+                    UPDATE job_posters SET session_id = %s WHERE  email = %s AND password = %s;
+                    SELECT * FROM job_posters WHERE email = %s AND password = %s;
+                """
+        cur.execute(query,(session_id,email,new_password,email,new_password,))
         user_type = "job_poster"
         user = cur.fetchone()
 
@@ -60,3 +67,17 @@ def get_user(email,input_password):
     cur.close()
     conn.close()
     return user,user_type
+
+def update_session(session_id,user_type):
+    conn = psycopg2.connect(database='csc_227_project',user='postgres',host='localhost',port='5432',password='enkay2008')
+    cur = conn.cursor()
+    if user_type is "job_seeker":
+        query = "UPDATE job_seekers SET session_id=NULL WHERE session_id=%s;"
+        cur.execute(query,(session_id,))
+    else:
+        query = "UPDATE job_posters SET session_id=NULL WHERE session_id=%s;"
+        cur.execute(query,(session_id,))
+    
+    conn.commit()
+    cur.close()
+    conn.close()
