@@ -1,7 +1,7 @@
 from tkinter import *
 from tkinter import messagebox
 from ttkwidgets.autocomplete import AutocompleteCombobox
-from models import User
+from models import User,Job
 import bcrypt,re
 
 session = {
@@ -11,6 +11,8 @@ session = {
     "logged_in": False
 }
 user = User()
+job =Job()
+
 home_pg = Tk()
 home_pg.geometry("900x500")
 home_pg.configure(background="gray")
@@ -438,42 +440,34 @@ def post_job_form():
     description_entry = Text(form_frame,width=25,height=5)
     description_entry.place(x=150,y=70)
 
-    date_posted_label = Label(form_frame,text="Posted on ",background="grey",fg="whitesmoke",font=("Arial",12))
-    date_posted_label.place(x=0,y=165)
-    day_posted_entry = Entry(form_frame,width=5)
-    day_posted_entry.place(x=150,y=165)
-    day_posted_label = Label(form_frame,text="DD",background="grey",fg="whitesmoke",font=("Arial",12))
-    day_posted_label.place(x=150,y=185)
-    month_posted_entry = Entry(form_frame,width=5)
-    month_posted_entry.place(x=190,y=165)
-    month_posted_label = Label(form_frame,text="MM",background="grey",fg="whitesmoke",font=("Arial",12))
-    month_posted_label.place(x=190,y=185)
-    year_posted_entry = Entry(form_frame,width=8)
-    year_posted_entry.place(x=230,y=165)
-    year_posted_label = Label(form_frame,text="YYYY",background="grey",fg="whitesmoke",font=("Arial",12))
-    year_posted_label.place(x=230,y=185)
-
     job_duration_label = Label(form_frame,text="Job length/duration",background="grey",fg="whitesmoke",font=("Arial",12))
-    job_duration_label.place(x=0,y=210)
-    global var4
-    var4 = StringVar(None,"S")
-    Radiobutton(form_frame,text="Small  (1-5 hours)",value="S",background="grey",variable=var4).place(x=160,y=210)
-    Radiobutton(form_frame,text="Medium (5-12 hours)",value="M",background="grey",variable=var4).place(x=160,y=230)
-    Radiobutton(form_frame,text="Large  (More than one working day)",value="L",background="grey",variable=var4).place(x=160,y=250)
+    job_duration_label.place(x=0,y=170)
+    global job_duration_var
+    job_duration_var = StringVar(None,"S")
+    Radiobutton(form_frame,text="Small  (1-5 hours)",value="S",background="grey",variable=job_duration_var).place(x=160,y=170)
+    Radiobutton(form_frame,text="Medium (5-12 hours)",value="M",background="grey",variable=job_duration_var).place(x=160,y=190)
+    Radiobutton(form_frame,text="Large  (More than one working day)",value="L",background="grey",variable=job_duration_var).place(x=160,y=210)
     
-    payment_label = Label(form_frame,text="Payment",background="grey",fg="whitesmoke",font=("Arial",12))
-    payment_label.place(x=0,y=280)
-    global var5
-    var5 = StringVar(None,"O")
-    Radiobutton(form_frame,text="One Time",value="O",background="grey",variable=var5).place(x=160,y=280)
-    Radiobutton(form_frame,text="Hourly",value="H",background="grey",variable=var5).place(x=160,y=300)
     amount_label = Label(form_frame,text="Amount",background="grey",fg="whitesmoke",font=("Arial",12))
-    amount_label.place(x=0,y=340)
+    amount_label.place(x=0,y=240)
     amount_entry = Entry(form_frame,width=10)
-    amount_entry.place(x=160,y=340)
+    amount_entry.place(x=160,y=240)
 
-    post_job_button = Button(form_frame,background="lavender",width=15,height=2,text="Post Job",command=lambda: [])
-    post_job_button.place(x=240,y=380)
+    def save_job_data():
+        input_job_category = category_entry.get()
+        input_job_description = description_entry.get("1.0","end")
+        input_job_duration = job_duration_var.get()
+        input_job_amount = amount_entry.get()
+
+        job.save_job(session["session_id"],input_job_category,input_job_description,input_job_duration,input_job_amount)
+
+        messagebox.showinfo("Job Posted","Job Posted Succesfully")
+        post_job_frame.destroy()
+        post_job_menu_bar.destroy()
+        home()
+
+    post_job_button = Button(form_frame,background="lavender",width=15,text="Post Job",command=lambda: [save_job_data()])
+    post_job_button.place(x=240,y=300)
 
     home_nav = Button(post_job_menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3,command=lambda:[post_job_frame.destroy(),post_job_menu_bar.destroy(),home()])
     home_nav.place(x=10,y=10)
@@ -489,4 +483,4 @@ def post_job_form():
 
     home_pg.mainloop()
 
-post_job_form()
+home()

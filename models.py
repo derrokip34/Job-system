@@ -33,3 +33,13 @@ class User:
     
     def log_out(self,sessionid,usertype):
         update_session(sessionid,usertype)
+
+class Job:
+    def save_job(self,session_id,job_category,job_description,job_duration,total_amount):
+        job_data = {
+            "job_category": job_category,
+            "job_description": job_description,
+            "job_duration": job_duration,
+            "total_amount": total_amount
+        }
+        add_job_to_db(session_id,job_data)

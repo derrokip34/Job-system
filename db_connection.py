@@ -1,6 +1,7 @@
 #Author: Derrick Kiprop <derrickip34@gmail.com>
 #Date:   Mon Apr 10
 import psycopg2,bcrypt,uuid
+from datetime import date
 
 def save_job_seeker_to_db(data):
     conn = psycopg2.connect(database='csc_227_project',user='postgres',host='localhost',port='5432',password='enkay2008')
@@ -53,7 +54,6 @@ def get_user(email,input_password):
     session_id = str(uuid.uuid4())
     cur.execute(query,(session_id,email,new_password,email,new_password))
     user = cur.fetchone()
-    user_type = "job_seeker"
     if user is None:
         query = """
                     UPDATE job_posters SET session_id = %s WHERE  email = %s AND password = %s;
@@ -62,6 +62,8 @@ def get_user(email,input_password):
         cur.execute(query,(session_id,email,new_password,email,new_password,))
         user_type = "job_poster"
         user = cur.fetchone()
+    else:
+        user_type = "job_seeker"
 
     conn.commit()
     cur.close()
@@ -78,6 +80,36 @@ def update_session(session_id,user_type):
         query = "UPDATE job_posters SET session_id=NULL WHERE session_id=%s;"
         cur.execute(query,(session_id,))
     
+    conn.commit()
+    cur.close()
+    conn.close()
+
+def get_users():
+    conn = psycopg2.connect(database='csc_227_project',user='postgres',host='localhost',port='5432',password='enkay2008')
+    cur = conn.cursor()
+    query = "SELECT first_name,last_name,email FROM job_posters;"
+    cur.execute(query)
+    users = cur.fetchall()
+    users_list = [user[0]+ " " + user[1] for user in users]
+
+    conn.commit()
+    cur.close()
+    conn.close()
+    return users_list
+
+def add_job_to_db(session_id,job_data):
+    conn = psycopg2.connect(database='csc_227_project',user='postgres',host='localhost',port='5432',password='enkay2008')
+    cur = conn.cursor()
+
+    today = date.today()
+    formatted_date = today.strftime("%d/%m/%Y")
+
+    query = "SELECT id FROM job_posters WHERE session_id=%s;"
+    cur.execute(query,(session_id,))
+    posted_by = cur.fetchone()
+    add_job_query = "INSERT INTO jobs(job_category,job_description,date_posted,posted_by,job_duration,total_amount) VALUES(%s,%s,%s,%s,%s,%s);"
+    cur.execute(add_job_query,(job_data["job_category"],job_data["job_description"],formatted_date,posted_by[0],job_data["job_duration"],int(job_data["total_amount"]),))
+
     conn.commit()
     cur.close()
     conn.close()
