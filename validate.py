@@ -7,3 +7,6 @@ def hash_password(password):
     hashed_password = new_hashed.decode('utf-8')
     return hashed_password
 
+def get_date_of_birth(day,month,year):
+    date_of_birth = day + "/" + month + "/" + year
+    return date_of_birth
