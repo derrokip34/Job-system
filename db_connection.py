@@ -1,11 +1,20 @@
 #Author: Derrick Kiprop <derrickip34@gmail.com>
 #Date:   Mon Apr 10
-import psycopg2,bcrypt,uuid
+import psycopg2,bcrypt,uuid,os
 from psycopg2.extras import DictCursor
 from datetime import date
+from dotenv import load_dotenv
+
+load_dotenv()
+
+db_host = os.getenv("DB_HOST")
+db_name = os.getenv("DB_NAME")
+db_user = os.getenv("DB_USER")
+db_password = os.getenv("DB_PASSWORD")
+db_port = os.getenv("DB_PORT")
 
 def save_job_seeker_to_db(data):
-    conn = psycopg2.connect(database='csc_227_project',user='postgres',host='localhost',port='5432',password='enkay2008')
+    conn = psycopg2.connect(database=db_name,user=db_user,host=db_host,port=db_port,password=db_password)
     cur = conn.cursor()
     query = "INSERT INTO job_seekers (first_name,last_name,email,phone_num,gender,dob,category,area,password) VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s);"
     cur.execute(query, (data["first_name"],data["last_name"],data["email"],data["phone_no"],data["gender"],data["dob"],data["category"],data["area"],data["password"]))
@@ -14,7 +23,7 @@ def save_job_seeker_to_db(data):
     conn.close()
 
 def save_job_poster_to_db(data):
-    conn = psycopg2.connect(database='csc_227_project',user='postgres',host='localhost',port='5432',password='enkay2008')
+    conn = psycopg2.connect(database=db_name,user=db_user,host=db_host,port=db_port,password=db_password)
     cur = conn.cursor()
     session_id = str(uuid.uuid4())
     query = "INSERT INTO job_posters (first_name,last_name,email,phone_num,gender,dob,password) VALUES(%s,%s,%s,%s,%s,%s,%s);"
@@ -24,7 +33,7 @@ def save_job_poster_to_db(data):
     conn.close()
 
 def get_areas():
-    conn = psycopg2.connect(database='csc_227_project',user='postgres',host='localhost',port='5432',password='enkay2008')
+    conn = psycopg2.connect(database=db_name,user=db_user,host=db_host,port=db_port,password=db_password)
     cur = conn.cursor()
     query = "SELECT area_name FROM areas;"
     cur.execute(query)
@@ -45,7 +54,7 @@ def hash_password(password):
 
 def get_user(email,input_password):
     new_password = hash_password(input_password)
-    conn = psycopg2.connect(database='csc_227_project',user='postgres',host='localhost',port='5432',password='enkay2008')
+    conn = psycopg2.connect(database=db_name,user=db_user,host=db_host,port=db_port,password=db_password)
     cur = conn.cursor()
     query = """
                 UPDATE job_seekers SET session_id = %s WHERE  email = %s AND password = %s;
@@ -72,7 +81,7 @@ def get_user(email,input_password):
     return user,user_type
 
 def update_session(session_id,user_type):
-    conn = psycopg2.connect(database='csc_227_project',user='postgres',host='localhost',port='5432',password='enkay2008')
+    conn = psycopg2.connect(database=db_name,user=db_user,host=db_host,port=db_port,password=db_password)
     cur = conn.cursor()
     if user_type is "job_seeker":
         query = "UPDATE job_seekers SET session_id=NULL WHERE session_id=%s;"
@@ -86,7 +95,8 @@ def update_session(session_id,user_type):
     conn.close()
 
 def get_users():
-    conn = psycopg2.connect(database='csc_227_project',user='postgres',host='localhost',port='5432',password='enkay2008')
+    print(db_name)
+    conn = psycopg2.connect(database=db_name,user=db_user,host=db_host,port=db_port,password=db_password)
     cur = conn.cursor()
     query = "SELECT first_name,last_name,email FROM job_posters;"
     cur.execute(query)
@@ -99,7 +109,7 @@ def get_users():
     return users_list
 
 def add_job_to_db(session_id,job_data):
-    conn = psycopg2.connect(database='csc_227_project',user='postgres',host='localhost',port='5432',password='enkay2008')
+    conn = psycopg2.connect(database=db_name,user=db_user,host=db_host,port=db_port,password=db_password)
     cur = conn.cursor()
 
     today = date.today()
@@ -116,7 +126,7 @@ def add_job_to_db(session_id,job_data):
     conn.close()
 
 def get_all_jobs():
-    conn = psycopg2.connect(database='csc_227_project',user='postgres',host='localhost',port='5432',password='enkay2008')
+    conn = psycopg2.connect(database=db_name,user=db_user,host=db_host,port=db_port,password=db_password)
     cur = conn.cursor(cursor_factory=DictCursor)
     query = "SELECT * FROM jobs;"
     cur.execute(query)
