@@ -43,3 +43,7 @@ class Job:
             "total_amount": total_amount
         }
         add_job_to_db(session_id,job_data)
+
+    def get_jobs_posted(self):
+        all_jobs_posted = get_all_jobs()
+        return all_jobs_posted

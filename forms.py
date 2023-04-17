@@ -2,7 +2,8 @@ from tkinter import *
 from tkinter import messagebox
 from ttkwidgets.autocomplete import AutocompleteCombobox
 from models import User,Job
-import bcrypt,re
+import re
+from validate import *
 
 session = {
     "username": None,
@@ -18,6 +19,15 @@ home_pg.geometry("900x500")
 home_pg.configure(background="gray")
 home_pg.resizable(0,0)
 
+def logout():
+    user.log_out(session["session_id"],session["user_type"])
+    session["logged_in"] = False
+    session["session_id"] = None
+    session["user_type"] = None
+    session["username"] = None
+    messagebox.showinfo("Log Out","User Logged out")
+    home()
+
 def home():
     home_pg.title("Home")
 
@@ -30,22 +40,11 @@ def home():
     form_frame = Frame(home_frame,bg="gray",borderwidth=10,height=1280)
     form_frame.pack(expand=True,fill=BOTH,padx=20,pady=20)
 
-    def logout():
-        user.log_out(session["session_id"],session["user_type"])
-        session["logged_in"] = False
-        session["session_id"] = None
-        session["user_type"] = None
-        session["username"] = None
-        home_frame.destroy()
-        home_menu_bar.destroy()
-        messagebox.showinfo("Log Out","User Logged out")
-        home()
-
     if session["logged_in"] is False:
         Button(form_frame,text="Job Seeker",command=lambda:[home_frame.destroy(),home_menu_bar.destroy(),registration_page()]).place(x=100,y=30)
         Button(form_frame,text="Job Poster",command=lambda:[job_poster_form()]).place(x=20,y=30)
     else:
-        Button(form_frame,text="Logout",command=lambda:[logout()]).place(x=20,y=30)
+        Button(form_frame,text="Logout",command=lambda:[home_menu_bar.destroy(),home_frame.destroy(),logout()]).place(x=20,y=30)
 
     def job_poster_form():
         user_details_window = Tk()
@@ -96,23 +95,8 @@ def home():
         confirm_password_label.place(x=20,y=270)
         confirm_password_entry = Entry(user_details_window,width=25,show="*")
         confirm_password_entry.place(x=160,y=270)
-        register_button = Button(user_details_window,background="lavender",width=20,height=2,text="Register",command=lambda:[get_date_of_birth(),hash_password(),validate_registration_data()])
+        register_button = Button(user_details_window,background="lavender",width=20,height=2,text="Register",command=lambda:[validate_registration_data()])
         register_button.place(x=250,y=320)
-
-        def get_date_of_birth():
-            day_of_birth = day_entry.get()
-            month_of_birth = month_entry.get()
-            year_of_birth = year_entry.get()
-            global date_of_birth
-            date_of_birth = day_of_birth + "/" + month_of_birth + "/" + year_of_birth
-
-        def hash_password():
-            salt = b'$2b$12$SJv9T2zvJFjI6bYtibhZv.'
-            new_password = password_entry.get()
-            new_pass_bytes = new_password.encode('utf-8')
-            new_hashed = bcrypt.hashpw(new_pass_bytes,salt)
-            global hashed_password
-            hashed_password = new_hashed.decode('utf-8')
 
         def validate_registration_data():
             first_name = fname_entry.get()
@@ -120,6 +104,9 @@ def home():
             gender = gender_var.get()
             phone_num = phone_no_entry.get()
             email = email_entry.get()
+            day_of_birth = day_entry.get()
+            month_of_birth = month_entry.get()
+            year_of_birth = year_entry.get()
             password = password_entry.get()
             confirm_password = confirm_password_entry.get()
             if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
@@ -144,11 +131,13 @@ def home():
                 return
             else:
                 global registration_data
+                hashed_password = hash_password(password)
+                dateofbirth = get_date_of_birth(day_of_birth,month_of_birth,year_of_birth)
                 registration_data = {
                     "first_name": first_name,
                     "last_name": last_name,
                     "gender": gender,
-                    "dob": date_of_birth,
+                    "dob": dateofbirth,
                     "phone_no": phone_num,
                     "email": email,
                     "password":hashed_password
@@ -169,7 +158,7 @@ def home():
     if session["logged_in"] is True and session["user_type"] is "job_poster":
         new1_nav = Button(home_menu_bar,background="lavender",width=15,height=3,text="Post Job",fg="black",bd=3,command=lambda: [home_frame.destroy(),home_menu_bar.destroy(),post_job_form()])
         new1_nav.place(x=10,y=170)
-        new2_nav = Button(home_menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3)
+        new2_nav = Button(home_menu_bar,background="lavender",width=15,height=3,text="View Jobs",fg="black",bd=3,command=lambda: [home_frame.destroy(),home_menu_bar.destroy(),view_jobs()])
         new2_nav.place(x=10,y=250)
         new3_nav = Button(home_menu_bar,background="lavender",width=15,height=3,text="Logout",fg="black",bd=3)
         new3_nav.place(x=10,y=330)
@@ -227,7 +216,7 @@ def login_page():
             login_menu_bar.destroy()
             home()
         else:
-            msg1 = "No such user found"
+            msg1 = "Invalid usermane/password"
             messagebox.showinfo('message',msg1)
     
     Button(form_frame,background="grey",width=10,text="Login",command=lambda:[user_login()]).pack(fill=NONE,anchor=CENTER,pady=30)
@@ -237,9 +226,9 @@ def login_page():
     reg_nav = Button(login_menu_bar,background="lavender",width=15,height=3,text="Register",fg="black",bd=3,command=lambda: [login_frame.destroy(),login_menu_bar.destroy(),registration_page()])
     reg_nav.place(x=10,y=90)
     if session["logged_in"] is True:
-        new1_nav = Button(login_menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3,command=lambda: [login_frame.destroy(),login_menu_bar.destroy(),post_job_form()])
+        new1_nav = Button(login_menu_bar,background="lavender",width=15,height=3,text="Show Jobs",fg="black",bd=3,command=lambda: [login_frame.destroy(),login_menu_bar.destroy(),post_job_form()])
         new1_nav.place(x=10,y=170)
-        new2_nav = Button(login_menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3)
+        new2_nav = Button(login_menu_bar,background="lavender",width=15,height=3,text="View Jobs",fg="black",bd=3,command=lambda: [login_frame.destroy(),login_menu_bar.destroy(),view_jobs()])
         new2_nav.place(x=10,y=250)
         new3_nav = Button(login_menu_bar,background="lavender",width=15,height=3,text="Logout",fg="black",bd=3)
         new3_nav.place(x=10,y=330)
@@ -311,23 +300,8 @@ def registration_page():
         confirm_password_entry = Entry(user_details_window,width=25,show="*")
         confirm_password_entry.place(x=160,y=270)
 
-        register_button = Button(user_details_window,background="lavender",width=20,height=2,text="Register",command=lambda:[get_date_of_birth(),hash_password(),validate_registration_data()])
+        register_button = Button(user_details_window,background="lavender",width=20,height=2,text="Register",command=lambda:[validate_registration_data()])
         register_button.place(x=250,y=320)
-
-        def get_date_of_birth():
-            day_of_birth = day_entry.get()
-            month_of_birth = month_entry.get()
-            year_of_birth = year_entry.get()
-            global date_of_birth
-            date_of_birth = day_of_birth + "/" + month_of_birth + "/" + year_of_birth
-
-        def hash_password():
-            salt = b'$2b$12$SJv9T2zvJFjI6bYtibhZv.'
-            new_password = password_entry.get()
-            new_pass_bytes = new_password.encode('utf-8')
-            new_hashed = bcrypt.hashpw(new_pass_bytes,salt)
-            global hashed_password
-            hashed_password = new_hashed.decode('utf-8')
 
         def validate_registration_data():
             first_name = fname_entry.get()
@@ -337,6 +311,9 @@ def registration_page():
             phone_num = phone_no_entry.get()
             email = email_entry.get()
             category = specialty_entry.get()
+            day_of_birth = day_entry.get()
+            month_of_birth = month_entry.get()
+            year_of_birth = year_entry.get()
             password = password_entry.get()
             confirm_password = confirm_password_entry.get()
             if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
@@ -361,6 +338,8 @@ def registration_page():
                 return
             else:
                 global registration_data
+                date_of_birth = get_date_of_birth(day_of_birth,month_of_birth,year_of_birth)
+                hashed_password = hash_password(password)
                 registration_data = {
                     "first_name": first_name,
                     "last_name": last_name,
@@ -474,13 +453,67 @@ def post_job_form():
     login_nav = Button(post_job_menu_bar,background="lavender",width=15,height=3,text="Login",fg="black",bd=3,command=lambda: [post_job_frame.destroy(),post_job_menu_bar.destroy(),login_page()])
     login_nav.place(x=10,y=90)
     if session["logged_in"] is True:
-        new1_nav = Button(post_job_menu_bar,background="lavender",width=15,height=3,text="Post Job",fg="black",bd=3)
+        new1_nav = Button(post_job_menu_bar,background="lavender",width=15,height=3,text="Post Job",fg="black",bd=3 )
         new1_nav.place(x=10,y=170)
-        new2_nav = Button(post_job_menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3)
+        new2_nav = Button(post_job_menu_bar,background="lavender",width=15,height=3,text="View Jobs",fg="black",bd=3)
         new2_nav.place(x=10,y=250)
         new3_nav = Button(post_job_menu_bar,background="lavender",width=15,height=3,text="Logout",fg="black",bd=3)
         new3_nav.place(x=10,y=330)
 
     home_pg.mainloop()
 
-home()
+def view_jobs():
+    home_pg.title("Jobs Posted")
+
+    view_jobs_menu_bar = Frame(home_pg,bg="dimgrey",width=150,height=1280)
+    view_jobs_menu_bar.pack(side=LEFT)
+
+    view_jobs_frame = Frame(home_pg,bg="wheat",borderwidth=10,width=550,height=1280)
+    view_jobs_frame.pack(expand=True,fill=BOTH)
+
+    scrollbar = Scrollbar(view_jobs_frame)
+    scrollbar.pack(side="right",fill='y')
+
+    form_frame = Canvas(view_jobs_frame,bg="gray",borderwidth=10)
+    form_frame.pack(expand=True,fill=BOTH,padx=20,pady=20)
+
+    scrollbar.config(command=form_frame.yview)
+
+    form_frame.configure(yscrollcommand=scrollbar.set)
+
+    inner_frame = Frame(form_frame,bg="gray")
+    form_frame.create_window((10, 0), window=inner_frame, anchor="center")
+
+    jobs = job.get_jobs_posted()
+
+    for a_job in jobs:
+        job_card = Frame(inner_frame,bg="gray",bd=2,relief="solid")
+        job_card.pack(fill=X,padx=10,pady=20)
+        job_label = Label(job_card,background="grey",text=a_job["job_category"],font=("Arial",'15'))
+        job_label.pack(side=TOP)
+        #job_label.grid(row=0,column=0)
+        #job_label.place(x=0,y=0)
+        job_description_label = Label(job_card,background="grey",width=50,height=2,text=a_job["job_description"],font=("Arial",'10'))
+        #job_description_label.grid(row=1,column=0)
+        job_description_label.pack(side=TOP)
+        job_application_button = Button(job_card,text="Apply")
+        job_application_button.pack(side=RIGHT,padx=10,pady=20)
+
+    form_frame.update_idletasks()
+    form_frame.configure(scrollregion=form_frame.bbox('all'))
+
+    home_nav = Button(view_jobs_menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=5,command=lambda:[view_jobs_frame.destroy(),view_jobs_menu_bar.destroy(),home()])
+    home_nav.place(x=10,y=10)
+    login_nav = Button(view_jobs_menu_bar,background="lavender",width=15,height=3,text="Login",fg="black",bd=3,command=lambda: [view_jobs_frame.destroy(),view_jobs_menu_bar.destroy(),login_page()])
+    login_nav.place(x=10,y=90)
+    if session["logged_in"] is True:
+        new1_nav = Button(view_jobs_menu_bar,background="lavender",width=15,height=3,text="Post Job",fg="black",bd=3)
+        new1_nav.place(x=10,y=170)
+        new2_nav = Button(view_jobs_menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3)
+        new2_nav.place(x=10,y=250)
+        new3_nav = Button(view_jobs_menu_bar,background="lavender",width=15,height=3,text="Logout",fg="black",bd=3)
+        new3_nav.place(x=10,y=330)
+
+    home_pg.mainloop()
+
+view_jobs()

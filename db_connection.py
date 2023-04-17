@@ -1,6 +1,7 @@
 #Author: Derrick Kiprop <derrickip34@gmail.com>
 #Date:   Mon Apr 10
 import psycopg2,bcrypt,uuid
+from psycopg2.extras import DictCursor
 from datetime import date
 
 def save_job_seeker_to_db(data):
@@ -113,3 +114,16 @@ def add_job_to_db(session_id,job_data):
     conn.commit()
     cur.close()
     conn.close()
+
+def get_all_jobs():
+    conn = psycopg2.connect(database='csc_227_project',user='postgres',host='localhost',port='5432',password='enkay2008')
+    cur = conn.cursor(cursor_factory=DictCursor)
+    query = "SELECT * FROM jobs;"
+    cur.execute(query)
+    jobs = cur.fetchall()
+    all_jobs = [dict(job) for job in jobs]
+    
+    conn.commit()
+    cur.close()
+    conn.close()
+    return all_jobs
