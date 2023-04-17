@@ -137,3 +137,23 @@ def get_all_jobs():
     cur.close()
     conn.close()
     return all_jobs
+
+def insert_application_to_db(session_id,job_id):
+    conn = psycopg2.connect(database=db_name,user=db_user,host=db_host,port=db_port,password=db_password)
+    cur = conn.cursor()
+
+    application_status = "ND"
+
+    today = date.today()
+    today_date = today.strftime("%d/%m/%Y")
+
+    query = "SELECT id FROM job_seekers WHERE session_id=%s;"
+    cur.execute(query,(session_id,))
+    applicant = cur.fetchone()
+    application_query = "INSERT INTO job_applications(applicant,job,application_status,application_date) VALUES(%s,%s,%s,%s);"
+    cur.execute(application_query,(applicant,job_id,application_status,today_date))
+
+    conn.commit()
+    cur.close()
+    conn.close()
+

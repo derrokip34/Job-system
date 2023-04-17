@@ -155,7 +155,7 @@ def home():
     home_nav.place(x=10,y=10)
     login_nav = Button(home_menu_bar,background="lavender",width=15,height=3,text="Login",fg="black",bd=3,command=lambda: [home_frame.destroy(),home_menu_bar.destroy(),login_page()])
     login_nav.place(x=10,y=90)
-    if session["logged_in"] is True and session["user_type"] is "job_poster":
+    if session["logged_in"] is True :
         new1_nav = Button(home_menu_bar,background="lavender",width=15,height=3,text="Post Job",fg="black",bd=3,command=lambda: [home_frame.destroy(),home_menu_bar.destroy(),post_job_form()])
         new1_nav.place(x=10,y=170)
         new2_nav = Button(home_menu_bar,background="lavender",width=15,height=3,text="View Jobs",fg="black",bd=3,command=lambda: [home_frame.destroy(),home_menu_bar.destroy(),view_jobs()])
@@ -485,8 +485,12 @@ def view_jobs():
     form_frame.create_window((10, 0), window=inner_frame, anchor="center")
 
     jobs = job.get_jobs_posted()
+    job_buttons = []
 
-    for a_job in jobs:
+    def apply_job(job_id):
+        job.job_application(session["session_id"],job_id)
+
+    for i,a_job in enumerate(jobs):
         job_card = Frame(inner_frame,bg="gray",bd=2,relief="solid")
         job_card.pack(fill=X,padx=10,pady=20)
         job_label = Label(job_card,background="grey",text=a_job["job_category"],font=("Arial",'15'))
@@ -496,8 +500,9 @@ def view_jobs():
         job_description_label = Label(job_card,background="grey",width=50,height=2,text=a_job["job_description"],font=("Arial",'10'))
         #job_description_label.grid(row=1,column=0)
         job_description_label.pack(side=TOP)
-        job_application_button = Button(job_card,text="Apply")
-        job_application_button.pack(side=RIGHT,padx=10,pady=20)
+        job_application_button = Button(job_card,text="Apply",command=lambda i=i+1:[apply_job(i)])
+        job_buttons.append(job_application_button)
+        job_application_button.pack(side=RIGHT,padx=10,pady=20)        
 
     form_frame.update_idletasks()
     form_frame.configure(scrollregion=form_frame.bbox('all'))
@@ -516,4 +521,4 @@ def view_jobs():
 
     home_pg.mainloop()
 
-view_jobs()
+home()

@@ -47,3 +47,6 @@ class Job:
     def get_jobs_posted(self):
         all_jobs_posted = get_all_jobs()
         return all_jobs_posted
+    
+    def job_application(self,sessionid,jobid):
+        insert_application_to_db(sessionid,jobid)
