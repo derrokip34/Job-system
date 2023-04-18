@@ -157,3 +157,17 @@ def insert_application_to_db(session_id,job_id):
     cur.close()
     conn.close()
 
+def remove_application_from_db(session_id,job_id):
+    conn = psycopg2.connect(database=db_name,user=db_user,host=db_host,port=db_port,password=db_password)
+    cur = conn.cursor()
+
+    query = "SELECT id FROM job_seekers WHERE session_id=%s;"
+    cur.execute(query,(session_id,))
+    applicant = cur.fetchone()
+
+    delete_query = "DELETE FROM job_applications WHERE job=%s AND applicant=%s;"
+    cur.execute(delete_query,(job_id,applicant))
+
+    conn.commit()
+    cur.close()
+    conn.close()
