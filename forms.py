@@ -490,10 +490,11 @@ def view_jobs():
 
     def apply_job(button_number,job_id):
         if job_application_button[button_number].cget("text") == "Apply":
-            job_application_button[button_number].config(text="Remove Application")
+            job_application_button[button_number].config(text="Withdraw Application")
             job.job_application(session["session_id"],job_id)
         else:
             job_application_button[button_number].config(text="Apply")
+            job.remove_application(session["session_id"],job_id)
 
     for i,a_job in enumerate(jobs):
         job_card = Frame(inner_frame,bg="gray",bd=2,relief="solid")

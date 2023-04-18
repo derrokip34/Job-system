@@ -50,3 +50,6 @@ class Job:
     
     def job_application(self,sessionid,jobid):
         insert_application_to_db(sessionid,jobid)
+
+    def remove_application(self,sessionid,jobid):
+        remove_application_from_db(sessionid,jobid)
