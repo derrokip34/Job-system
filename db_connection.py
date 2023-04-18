@@ -171,3 +171,22 @@ def remove_application_from_db(session_id,job_id):
     conn.commit()
     cur.close()
     conn.close()
+
+def get_user_applications(session_id):
+    conn = psycopg2.connect(database=db_name,user=db_user,host=db_host,port=db_port,password=db_password)
+    cur = conn.cursor(cursor_factory=DictCursor)
+
+    query = "SELECT id FROM job_seekers WHERE session_id=%s;"
+    cur.execute(query,(session_id,))
+    applicant = cur.fetchone()
+
+    delete_query = "SELECT job FROM job_applications WHERE applicant=%s;"
+    cur.execute(delete_query,(applicant[0],))
+
+    applications = cur.fetchall()
+
+    conn.commit()
+    cur.close()
+    conn.close()
+    return applications
+
