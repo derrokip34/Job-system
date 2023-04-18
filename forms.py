@@ -485,10 +485,15 @@ def view_jobs():
     form_frame.create_window((10, 0), window=inner_frame, anchor="center")
 
     jobs = job.get_jobs_posted()
-    job_buttons = []
+    job_application_button = {}
 
-    def apply_job(job_id):
-        job.job_application(session["session_id"],job_id)
+
+    def apply_job(button_number,job_id):
+        if job_application_button[button_number].cget("text") == "Apply":
+            job_application_button[button_number].config(text="Remove Application")
+            job.job_application(session["session_id"],job_id)
+        else:
+            job_application_button[button_number].config(text="Apply")
 
     for i,a_job in enumerate(jobs):
         job_card = Frame(inner_frame,bg="gray",bd=2,relief="solid")
@@ -500,9 +505,8 @@ def view_jobs():
         job_description_label = Label(job_card,background="grey",width=50,height=2,text=a_job["job_description"],font=("Arial",'10'))
         #job_description_label.grid(row=1,column=0)
         job_description_label.pack(side=TOP)
-        job_application_button = Button(job_card,text="Apply",command=lambda i=i+1:[apply_job(i)])
-        job_buttons.append(job_application_button)
-        job_application_button.pack(side=RIGHT,padx=10,pady=20)        
+        job_application_button[i] = Button(job_card,text="Apply",command=lambda i=i+1:[apply_job(i-1,i),])
+        job_application_button[i].pack(side=RIGHT,padx=10,pady=20)
 
     form_frame.update_idletasks()
     form_frame.configure(scrollregion=form_frame.bbox('all'))
