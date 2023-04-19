@@ -53,3 +53,7 @@ class Job:
 
     def remove_application(self,sessionid,jobid):
         remove_application_from_db(sessionid,jobid)
+
+    def get_application(self,sessionid):
+        user_applications = get_user_applications(sessionid)
+        return user_applications
