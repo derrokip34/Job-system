@@ -485,29 +485,41 @@ def view_jobs():
     form_frame.create_window((10, 0), window=inner_frame, anchor="center")
 
     jobs = job.get_jobs_posted()
-    job_application_button = {}
 
+    applications = job.get_application(session["session_id"])
 
-    def apply_job(button_number,job_id):
-        if job_application_button[button_number].cget("text") == "Apply":
-            job_application_button[button_number].config(text="Withdraw Application")
+    def apply_job(button,job_id):
+        if button.cget("text") == "Apply":
+            button.config(text="Withdraw Application")
             job.job_application(session["session_id"],job_id)
         else:
-            job_application_button[button_number].config(text="Apply")
+            button.config(text="Withdraw Application")
+            button.config(text="Apply")
             job.remove_application(session["session_id"],job_id)
 
-    for i,a_job in enumerate(jobs):
-        job_card = Frame(inner_frame,bg="gray",bd=2,relief="solid")
+    def create_card(parent, card_label, description, id):
+        job_card = Frame(parent,bg="gray",bd=2,relief="solid")
         job_card.pack(fill=X,padx=10,pady=20)
-        job_label = Label(job_card,background="grey",text=a_job["job_category"],font=("Arial",'15'))
+        job_label = Label(job_card,background="grey",text=card_label,font=("Arial",'15'))
         job_label.pack(side=TOP)
-        #job_label.grid(row=0,column=0)
-        #job_label.place(x=0,y=0)
-        job_description_label = Label(job_card,background="grey",width=50,height=2,text=a_job["job_description"],font=("Arial",'10'))
-        #job_description_label.grid(row=1,column=0)
+        job_description_label = Label(job_card,background="grey",text=description,width=50,height=2,font=("Arial",'10'))
         job_description_label.pack(side=TOP)
-        job_application_button[i] = Button(job_card,text="Apply",command=lambda i=i+1:[apply_job(i-1,i),])
-        job_application_button[i].pack(side=RIGHT,padx=10,pady=20)
+        button_text = StringVar(job_card)
+        if ([id] in applications) is True:
+            button_text = "Withdraw Application"
+        else:
+            button_text = "Apply"
+        job_application_button = Button(job_card,text=button_text,command=lambda:[apply_job(job_application_button,id)])
+        job_application_button.pack(side=RIGHT,padx=10,pady=20)
+
+        return job_card
+
+    cards = []
+
+    for a_job in jobs:
+        print([a_job["job_id"]] in applications)
+        card = create_card(inner_frame,a_job["job_category"],a_job["job_description"],a_job["job_id"])
+        cards.append(card)
 
     form_frame.update_idletasks()
     form_frame.configure(scrollregion=form_frame.bbox('all'))
