@@ -190,3 +190,16 @@ def get_user_applications(session_id):
     conn.close()
     return applications
 
+def get_job(job_id):
+    conn = psycopg2.connect(database=db_name,user=db_user,host=db_host,port=db_port,password=db_password)
+    cur = conn.cursor(cursor_factory=DictCursor)
+
+    query = "SELECT * FROM jobs WHERE job_id=%s;"
+    cur.execute(query,(job_id,))
+    job = cur.fetchone()
+
+    conn.commit()
+    cur.close()
+    conn.close()
+    return job
+

@@ -57,3 +57,7 @@ class Job:
     def get_application(self,sessionid):
         user_applications = get_user_applications(sessionid)
         return user_applications
+    
+    def get_spcified_job(self,job_id):
+        job = get_job(job_id)
+        return job
