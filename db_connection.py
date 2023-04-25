@@ -255,3 +255,16 @@ def get_job(job_id):
     cur.close()
     conn.close()
     return job
+
+def select_applicant(application_id):
+    conn = psycopg2.connect(database=db_name,user=db_user,host=db_host,port=db_port,password=db_password)
+    cur = conn.cursor(cursor_factory=DictCursor)
+
+    query = """UPDATE job_applications
+                SET application_status='S'
+                WHERE application_id=%s;
+            """
+    cur.execute(query,(application_id,))
+    conn.commit()
+    cur.close()
+    conn.close()

@@ -82,3 +82,6 @@ class Job:
     def get_job_applications(self,job_id):
         applications = get_job_applications(job_id)
         return applications
+    
+    def select_job_applicant(self,application_id):
+        select_applicant(application_id)
