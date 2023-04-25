@@ -74,3 +74,7 @@ class Job:
     def get_specified_job(self,job_id):
         job = get_job(job_id)
         return job
+    
+    def get_user_jobs(self,session_id):
+        jobs = get_jobs_posted_by_user(session_id)
+        return jobs
