@@ -34,6 +34,11 @@ class User:
     def log_out(self,sessionid,usertype):
         update_session(sessionid,usertype)
 
+    def get_job_poster(self,id):
+        user = get_job_poster_by_id(id)
+        full_username = user[0] + " " + user[1]
+        return full_username
+
 class Job:
     def save_job(self,session_id,job_category,job_description,job_duration,total_amount):
         job_data = {
@@ -58,6 +63,6 @@ class Job:
         user_applications = get_user_applications(sessionid)
         return user_applications
     
-    def get_spcified_job(self,job_id):
+    def get_specified_job(self,job_id):
         job = get_job(job_id)
         return job
