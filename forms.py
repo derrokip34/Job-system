@@ -509,15 +509,19 @@ def view_jobs():
             button_text = "Withdraw Application"
         else:
             button_text = "Apply"
+        if ([id] in applications) is True:
+            view_application_button = Button(job_card,text="View Applicants",command=lambda:[])
+            view_application_button.pack(side=RIGHT,padx=10,pady=20)
         job_application_button = Button(job_card,text=button_text,command=lambda:[apply_job(job_application_button,id)])
         job_application_button.pack(side=RIGHT,padx=10,pady=20)
+        view_button = Button(job_card,text="View Job",command=lambda:[view_jobs_frame.destroy(),view_jobs_menu_bar.destroy(),job_details_page(id)])
+        view_button.pack(side=RIGHT,padx=10,pady=20)
 
         return job_card
 
     cards = []
 
     for a_job in jobs:
-        print([a_job["job_id"]] in applications)
         card = create_card(inner_frame,a_job["job_category"],a_job["job_description"],a_job["job_id"])
         cards.append(card)
 
@@ -538,4 +542,64 @@ def view_jobs():
 
     home_pg.mainloop()
 
-home()
+def job_details_page(job_id):
+    page_title = f"Job J-{job_id}"
+
+    print(page_title)
+
+    spec_job = job.get_specified_job(job_id)
+    print(spec_job["job_description"])
+
+    home_pg.title(page_title)
+
+    job_details_menu_bar = Frame(home_pg,bg="dimgrey",width=150,height=1280)
+    job_details_menu_bar.pack(side=LEFT)
+
+    job_details_frame = Frame(home_pg,bg="wheat",borderwidth=10,width=550,height=1280)
+    job_details_frame.pack(expand=True,fill=BOTH)
+
+    form_frame = Frame(job_details_frame,bg="gray",borderwidth=10,height=1280)
+    form_frame.pack(expand=True,fill=BOTH,padx=20,pady=20)
+
+    job_id_label = Label(form_frame,text=f"Job J-{job_id}",background="grey",fg="whitesmoke",font=("Arial",20))
+    job_id_label.place(x=20,y=0)
+    job_category_label = Label(form_frame,text="Category:\t\t"+spec_job["job_category"],background="grey",fg="whitesmoke",font=("Arial",15))
+    job_category_label.place(x=20,y=50)
+    job_description_label = Label(form_frame,text="Description:\t"+spec_job["job_description"],background="grey",fg="whitesmoke",font=("Arial",15))
+    job_description_label.place(x=20,y=100)
+    date = spec_job["date_posted"]
+    date_posted_label = Label(form_frame,text=f"Posted on:\t{date}",background="grey",fg="whitesmoke",font=("Arial",15))
+    date_posted_label.place(x=20,y=150)
+    posted_user = user.get_job_poster(spec_job["posted_by"])
+    posted_by_label = Label(form_frame,text=f"Posted by:\t" + posted_user,background="grey",fg="whitesmoke",font=("Arial",15))
+    posted_by_label.place(x=20,y=200)
+    done_by_user = user.get_job_seeker(spec_job["done_by"])
+    posted_by_label = Label(form_frame,text=f"Done by:\t\t" + done_by_user,background="grey",fg="whitesmoke",font=("Arial",15))
+    posted_by_label.place(x=20,y=250)
+    if spec_job["job_duration"] is 'L':
+        job_duration = "Large(More than one working day)"
+    elif spec_job["job_duration"] is 'M':
+        job_duration = "Medium(5-12 hours)"
+    else:
+        job_duration = "Small(1-5 hours)"
+    duration_label = Label(form_frame,text=f"Job Duration by:\t" + job_duration,background="grey",fg="whitesmoke",font=("Arial",15))
+    duration_label.place(x=20,y=300)
+    job_cost = spec_job["total_amount"]
+    job_cost_label = Label(form_frame,text=f"Price:\t\t{job_cost}" + " Kshs.",background="grey",fg="whitesmoke",font=("Arial",15))
+    job_cost_label.place(x=20,y=350)
+
+    home_nav = Button(job_details_menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=5,command=lambda:[job_details_frame.destroy(),job_details_menu_bar.destroy(),home()])
+    home_nav.place(x=10,y=10)
+    login_nav = Button(job_details_menu_bar,background="lavender",width=15,height=3,text="Login",fg="black",bd=3,command=lambda: [job_details_frame.destroy(),job_details_menu_bar.destroy(),login_page()])
+    login_nav.place(x=10,y=90)
+    if session["logged_in"] is True:
+        new1_nav = Button(job_details_menu_bar,background="lavender",width=15,height=3,text="Post Job",fg="black",bd=3)
+        new1_nav.place(x=10,y=170)
+        new2_nav = Button(job_details_menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3)
+        new2_nav.place(x=10,y=250)
+        new3_nav = Button(job_details_menu_bar,background="lavender",width=15,height=3,text="Logout",fg="black",bd=3)
+        new3_nav.place(x=10,y=330)
+
+    home_pg.mainloop()
+
+job_details_page(2)
