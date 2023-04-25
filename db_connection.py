@@ -181,7 +181,7 @@ def insert_application_to_db(session_id,job_id):
     conn = psycopg2.connect(database=db_name,user=db_user,host=db_host,port=db_port,password=db_password)
     cur = conn.cursor()
 
-    application_status = "ND"
+    application_status = "NS"
 
     today = date.today()
     today_date = today.strftime("%d/%m/%Y")
@@ -219,8 +219,22 @@ def get_user_applications(session_id):
     cur.execute(query,(session_id,))
     applicant = cur.fetchone()
 
-    delete_query = "SELECT job FROM job_applications WHERE applicant=%s;"
-    cur.execute(delete_query,(applicant[0],))
+    query2 = "SELECT job FROM job_applications WHERE applicant=%s;"
+    cur.execute(query2,(applicant[0],))
+
+    applications = cur.fetchall()
+
+    conn.commit()
+    cur.close()
+    conn.close()
+    return applications
+
+def get_job_applications(job_id):
+    conn = psycopg2.connect(database=db_name,user=db_user,host=db_host,port=db_port,password=db_password)
+    cur = conn.cursor(cursor_factory=DictCursor)
+
+    query = "SELECT * FROM job_applications WHERE job=%s;"
+    cur.execute(query,(job_id,))
 
     applications = cur.fetchall()
 
