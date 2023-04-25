@@ -38,6 +38,14 @@ class User:
         user = get_job_poster_by_id(id)
         full_username = user[0] + " " + user[1]
         return full_username
+    
+    def get_job_seeker(self,id):
+        user = get_job_seeker_by_id(id)
+        if user is not None:
+            full_username = user[0] + " " + user[1]
+        else:
+            full_username = "Not selected yet"
+        return full_username
 
 class Job:
     def save_job(self,session_id,job_category,job_description,job_duration,total_amount):
