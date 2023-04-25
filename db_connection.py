@@ -181,7 +181,7 @@ def insert_application_to_db(session_id,job_id):
     conn = psycopg2.connect(database=db_name,user=db_user,host=db_host,port=db_port,password=db_password)
     cur = conn.cursor()
 
-    application_status = "NS"
+    application_status = "ND"
 
     today = date.today()
     today_date = today.strftime("%d/%m/%Y")
