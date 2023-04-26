@@ -158,8 +158,12 @@ def home():
     if session["logged_in"] is True :
         new1_nav = Button(home_menu_bar,background="lavender",width=15,height=3,text="Post Job",fg="black",bd=3,command=lambda: [home_frame.destroy(),home_menu_bar.destroy(),post_job_form()])
         new1_nav.place(x=10,y=170)
-        new2_nav = Button(home_menu_bar,background="lavender",width=15,height=3,text="View Jobs",fg="black",bd=3,command=lambda: [home_frame.destroy(),home_menu_bar.destroy(),view_jobs()])
-        new2_nav.place(x=10,y=250)
+        if session["user_type"] is "job_seeker":
+            new2_nav = Button(home_menu_bar,background="lavender",width=15,height=3,text="View Jobs",fg="black",bd=3,command=lambda: [home_frame.destroy(),home_menu_bar.destroy(),view_jobs()])
+            new2_nav.place(x=10,y=250)
+        else:
+            new2_nav = Button(home_menu_bar,background="lavender",width=15,height=3,text="View Jobs",fg="black",bd=3,command=lambda: [home_frame.destroy(),home_menu_bar.destroy(),job_posters_jobs_view()])
+            new2_nav.place(x=10,y=250)
         new3_nav = Button(home_menu_bar,background="lavender",width=15,height=3,text="Logout",fg="black",bd=3)
         new3_nav.place(x=10,y=330)
 
@@ -509,10 +513,107 @@ def view_jobs():
             button_text = "Withdraw Application"
         else:
             button_text = "Apply"
-        if ([id] in applications) is True:
-            view_application_button = Button(job_card,text="View Applicants",command=lambda:[])
-            view_application_button.pack(side=RIGHT,padx=10,pady=20)
         job_application_button = Button(job_card,text=button_text,command=lambda:[apply_job(job_application_button,id)])
+        job_application_button.pack(side=RIGHT,padx=10,pady=20)
+        view_button = Button(job_card,text="View Job",command=lambda:[view_jobs_frame.destroy(),view_jobs_menu_bar.destroy(),job_details_page(id)])
+        view_button.pack(side=RIGHT,padx=10,pady=20)
+
+        return job_card
+
+    cards = []
+
+    for a_job in jobs:
+        card = create_card(inner_frame,a_job["job_category"],a_job["job_description"],a_job["job_id"])
+        cards.append(card)
+
+    form_frame.update_idletasks()
+    form_frame.configure(scrollregion=form_frame.bbox('all'))
+
+    home_nav = Button(view_jobs_menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=5,command=lambda:[view_jobs_frame.destroy(),view_jobs_menu_bar.destroy(),home()])
+    home_nav.place(x=10,y=10)
+    login_nav = Button(view_jobs_menu_bar,background="lavender",width=15,height=3,text="Login",fg="black",bd=3,command=lambda: [view_jobs_frame.destroy(),view_jobs_menu_bar.destroy(),login_page()])
+    login_nav.place(x=10,y=90)
+    if session["logged_in"] is True:
+        new1_nav = Button(view_jobs_menu_bar,background="lavender",width=15,height=3,text="Post Job",fg="black",bd=3)
+        new1_nav.place(x=10,y=170)
+        new2_nav = Button(view_jobs_menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3)
+        new2_nav.place(x=10,y=250)
+        new3_nav = Button(view_jobs_menu_bar,background="lavender",width=15,height=3,text="Logout",fg="black",bd=3)
+        new3_nav.place(x=10,y=330)
+
+    home_pg.mainloop()
+
+def job_posters_jobs_view():
+    home_pg.title("Jobs Posted")
+
+    view_jobs_menu_bar = Frame(home_pg,bg="dimgrey",width=150,height=1280)
+    view_jobs_menu_bar.pack(side=LEFT)
+
+    view_jobs_frame = Frame(home_pg,bg="wheat",borderwidth=10,width=550,height=1280)
+    view_jobs_frame.pack(expand=True,fill=BOTH)
+
+    scrollbar = Scrollbar(view_jobs_frame)
+    scrollbar.pack(side="right",fill='y')
+
+    form_frame = Canvas(view_jobs_frame,bg="gray",borderwidth=10)
+    form_frame.pack(expand=True,fill=BOTH,padx=20,pady=20)
+
+    scrollbar.config(command=form_frame.yview)
+
+    form_frame.configure(yscrollcommand=scrollbar.set)
+
+    inner_frame = Frame(form_frame,bg="gray")
+    form_frame.create_window((10, 0), window=inner_frame, anchor="center")
+
+    def display_applicants(job_id):
+        display_applicants_window = Tk()
+        display_applicants_window.geometry('400x400')
+        job_applications = job.get_job_applications(job_id)
+        applicants_frame = Canvas(display_applicants_window)
+
+        scrollbar = Scrollbar(display_applicants_window,command=applicants_frame.yview)
+        scrollbar.pack(side="right",fill='y')
+        applicants_frame.configure(yscrollcommand=scrollbar.set)
+
+        def create_applicant_cards(card_label, date_applied, id):
+            applicant_card = Frame(display_applicants_window,bg="gray",bd=2,relief="solid")
+            applicant_card.pack(fill=X,padx=10,pady=20)
+            applicant_name_label = Label(applicant_card,text="Applicant Name: " + card_label,background="grey",fg="black",font=("Arial","13"))
+            applicant_name_label.pack(side=TOP)
+            date_applied_label = Label(applicant_card,text=f"Applied on: {date_applied}",background="grey",fg="black",font=("Arial","13"))
+            date_applied_label.pack(side=TOP)
+            select_applicant_button = Button(applicant_card,text="Select Applicant",command=lambda:[job.select_job_applicant(application["application_id"])])
+            select_applicant_button.pack(side=RIGHT)
+
+            return applicant_card
+
+        if len(job_applications) is 0:
+            no_applicants_label = Label(display_applicants_window,background="grey",text="No Applicants",font=("Arial",'15'))
+            no_applicants_label.place(x=20,y=40)
+        else:
+            inner_applicants_frame = Frame(applicants_frame,bg="gray")
+            applicants_frame.create_window((10,0),window=inner_applicants_frame,anchor="center")
+            applicant_cards=[]
+            for application in job_applications:
+                applicant = user.get_job_seeker(application["applicant"])
+                applicant_card = create_applicant_cards(applicant,application["application_date"],application["application_id"])
+                applicant_cards.append(applicant_card)
+
+        applicants_frame.update_idletasks()
+        applicants_frame.configure(scrollregion=form_frame.bbox('all'))
+
+        display_applicants_window.mainloop()
+
+    jobs = job.get_user_jobs(session["session_id"])
+
+    def create_card(parent, card_label, description, id):
+        job_card = Frame(parent,bg="gray",bd=2,relief="solid")
+        job_card.pack(fill=X,padx=10,pady=20)
+        job_label = Label(job_card,background="grey",text=card_label,font=("Arial",'15'))
+        job_label.pack(side=TOP)
+        job_description_label = Label(job_card,background="grey",text=description,width=50,height=2,font=("Arial",'10'))
+        job_description_label.pack(side=TOP)
+        job_application_button = Button(job_card,text="View Applicants",command=lambda:[display_applicants(id)])
         job_application_button.pack(side=RIGHT,padx=10,pady=20)
         view_button = Button(job_card,text="View Job",command=lambda:[view_jobs_frame.destroy(),view_jobs_menu_bar.destroy(),job_details_page(id)])
         view_button.pack(side=RIGHT,padx=10,pady=20)
@@ -545,10 +646,7 @@ def view_jobs():
 def job_details_page(job_id):
     page_title = f"Job J-{job_id}"
 
-    print(page_title)
-
     spec_job = job.get_specified_job(job_id)
-    print(spec_job["job_description"])
 
     home_pg.title(page_title)
 
@@ -601,5 +699,4 @@ def job_details_page(job_id):
         new3_nav.place(x=10,y=330)
 
     home_pg.mainloop()
-
-job_details_page(2)
+home()
