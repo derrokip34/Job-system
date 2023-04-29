@@ -210,7 +210,7 @@ def login_page():
             session["username"] = login_user[6]
             session["logged_in"] = True
             if user_type is "job_seeker":
-                session["session_id"] = login_user[10]
+                session["session_id"] = login_user[11]
             else:
                 session["session_id"] = login_user[9]
             session["user_type"] = user_type
@@ -575,17 +575,34 @@ def job_posters_jobs_view():
         scrollbar.pack(side="right",fill='y')
         applicants_frame.configure(yscrollcommand=scrollbar.set)
 
-        def create_applicant_cards(card_label, date_applied, id):
+        def create_applicant_cards(card_label, date_applied, applicant_id,application_status):
             applicant_card = Frame(display_applicants_window,bg="gray",bd=2,relief="solid")
             applicant_card.pack(fill=X,padx=10,pady=20)
             applicant_name_label = Label(applicant_card,text="Applicant Name: " + card_label,background="grey",fg="black",font=("Arial","13"))
             applicant_name_label.pack(side=TOP)
             date_applied_label = Label(applicant_card,text=f"Applied on: {date_applied}",background="grey",fg="black",font=("Arial","13"))
             date_applied_label.pack(side=TOP)
-            select_applicant_button = Button(applicant_card,text="Select Applicant",command=lambda:[job.select_job_applicant(application["application_id"])])
-            select_applicant_button.pack(side=RIGHT)
+            view_profile_button = Button(applicant_card,text="View User profile",command=lambda:[job.select_job_applicant(applicant_id)])
+            view_profile_button.pack(side=RIGHT,padx=10,pady=20)
+
+            if application_status == "ND":
+                button_text = "Select Applicant"
+            elif application_status == "S":
+                button_text = "Remove Applicant"
+
+            select_applicant_button = Button(applicant_card,text=button_text,command=lambda:[select_unselect_applicant(select_applicant_button,applicant_id)])
+            select_applicant_button.pack(side=RIGHT,padx=10,pady=20)
 
             return applicant_card
+        
+        def select_unselect_applicant(button,applicant_id):
+            if button.cget("text") == "Select Applicant":
+                button.config(text="Remove Applicant")
+                job.select_job_applicant(applicant_id)
+            else:
+                button.config(text="Remove Applicant")
+                button.config(text="Select Applicant")
+                job.unselect_job_applicant(applicant_id)
 
         if len(job_applications) is 0:
             no_applicants_label = Label(display_applicants_window,background="grey",text="No Applicants",font=("Arial",'15'))
@@ -596,8 +613,9 @@ def job_posters_jobs_view():
             applicant_cards=[]
             for application in job_applications:
                 applicant = user.get_job_seeker(application["applicant"])
-                applicant_card = create_applicant_cards(applicant,application["application_date"],application["application_id"])
+                applicant_card = create_applicant_cards(applicant,application["application_date"],application["application_id"],application["application_status"])
                 applicant_cards.append(applicant_card)
+                print(application["application_status"])
 
         applicants_frame.update_idletasks()
         applicants_frame.configure(scrollregion=form_frame.bbox('all'))

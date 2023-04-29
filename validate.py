@@ -8,5 +8,5 @@ def hash_password(password):
     return hashed_password
 
 def get_date_of_birth(day,month,year):
-    date_of_birth = day + "/" + month + "/" + year
+    date_of_birth = month + "/" + day + "/" + year
     return date_of_birth

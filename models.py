@@ -85,3 +85,6 @@ class Job:
     
     def select_job_applicant(self,application_id):
         select_applicant(application_id)
+
+    def unselect_job_applicant(self,application_id):
+        reverse_applicant(application_id)

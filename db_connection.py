@@ -134,9 +134,8 @@ def add_job_to_db(session_id,job_data):
     conn = psycopg2.connect(database=db_name,user=db_user,host=db_host,port=db_port,password=db_password)
     cur = conn.cursor()
 
-    today = date.today()
-    formatted_date = today.strftime("%d/%m/%Y")
-
+    formatted_date = date.today()
+    
     query = "SELECT id FROM job_posters WHERE session_id=%s;"
     cur.execute(query,(session_id,))
     posted_by = cur.fetchone()
@@ -183,9 +182,8 @@ def insert_application_to_db(session_id,job_id):
 
     application_status = "ND"
 
-    today = date.today()
-    today_date = today.strftime("%d/%m/%Y")
-
+    today_date = date.today()
+    
     query = "SELECT id FROM job_seekers WHERE session_id=%s;"
     cur.execute(query,(session_id,))
     applicant = cur.fetchone()
@@ -262,6 +260,19 @@ def select_applicant(application_id):
 
     query = """UPDATE job_applications
                 SET application_status='S'
+                WHERE application_id=%s;
+            """
+    cur.execute(query,(application_id,))
+    conn.commit()
+    cur.close()
+    conn.close()
+
+def reverse_applicant(application_id):
+    conn = psycopg2.connect(database=db_name,user=db_user,host=db_host,port=db_port,password=db_password)
+    cur = conn.cursor(cursor_factory=DictCursor)
+
+    query = """UPDATE job_applications
+                SET application_status='ND'
                 WHERE application_id=%s;
             """
     cur.execute(query,(application_id,))
