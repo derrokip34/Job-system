@@ -48,6 +48,7 @@ query = """
             job_duration VARCHAR(10),
             total_amount INT,
             done_on DATE,
+            job_status VARCHAR(10),
             FOREIGN KEY (posted_by) REFERENCES job_posters(id),
             FOREIGN KEY (done_by) REFERENCES job_seekers(id)
         );
@@ -61,7 +62,6 @@ query = """
             FOREIGN KEY (job) REFERENCES jobs(job_id)
         );
         """
-
 cur.execute(query)
 conn.commit()
 cur.close()
