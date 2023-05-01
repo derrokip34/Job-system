@@ -135,12 +135,13 @@ def add_job_to_db(session_id,job_data):
     cur = conn.cursor()
 
     formatted_date = date.today()
+    job_status = "false"
     
     query = "SELECT id FROM job_posters WHERE session_id=%s;"
     cur.execute(query,(session_id,))
     posted_by = cur.fetchone()
-    add_job_query = "INSERT INTO jobs(job_category,job_description,date_posted,posted_by,job_duration,total_amount) VALUES(%s,%s,%s,%s,%s,%s);"
-    cur.execute(add_job_query,(job_data["job_category"],job_data["job_description"],formatted_date,posted_by[0],job_data["job_duration"],int(job_data["total_amount"]),))
+    add_job_query = "INSERT INTO jobs(job_category,job_description,date_posted,posted_by,job_duration,total_amount,job_status) VALUES(%s,%s,%s,%s,%s,%s,%s);"
+    cur.execute(add_job_query,(job_data["job_category"],job_data["job_description"],formatted_date,posted_by[0],job_data["job_duration"],int(job_data["total_amount"]),job_status,))
 
     conn.commit()
     cur.close()
@@ -166,7 +167,7 @@ def get_jobs_posted_by_user(session_id):
     cur.execute(query1,(session_id,))
     user = cur.fetchone()
 
-    query = "SELECT * FROM jobs WHERE posted_by=%s;"
+    query = "SELECT * FROM jobs WHERE posted_by=%s AND job_status='false';"
     cur.execute(query,(user))
     jobs = cur.fetchall()
     all_jobs = [dict(job) for job in jobs]
@@ -256,7 +257,7 @@ def get_job(job_id):
 
 def select_applicant(application_id):
     conn = psycopg2.connect(database=db_name,user=db_user,host=db_host,port=db_port,password=db_password)
-    cur = conn.cursor(cursor_factory=DictCursor)
+    cur = conn.cursor()
 
     query = """UPDATE job_applications
                 SET application_status='S'
@@ -269,13 +270,29 @@ def select_applicant(application_id):
 
 def reverse_applicant(application_id):
     conn = psycopg2.connect(database=db_name,user=db_user,host=db_host,port=db_port,password=db_password)
-    cur = conn.cursor(cursor_factory=DictCursor)
+    cur = conn.cursor()
 
     query = """UPDATE job_applications
                 SET application_status='ND'
                 WHERE application_id=%s;
             """
     cur.execute(query,(application_id,))
+    conn.commit()
+    cur.close()
+    conn.close()
+
+def job_done(job_id):
+    conn = psycopg2.connect(database=db_name,user=db_user,host=db_host,port=db_port,password=db_password)
+    cur = conn.cursor()
+
+    done_on = date.today()
+    job_status = "true"
+
+    query = """UPDATE jobs
+                SET job_status=%s,done_on=%s
+                WHERE job_id=%s;
+            """
+    cur.execute(query,(job_status,done_on,job_id,))
     conn.commit()
     cur.close()
     conn.close()

@@ -622,6 +622,9 @@ def job_posters_jobs_view():
 
         display_applicants_window.mainloop()
 
+    def job_rating():
+        print("Job done")
+
     jobs = job.get_user_jobs(session["session_id"])
 
     def create_card(parent, card_label, description, id):
@@ -635,6 +638,8 @@ def job_posters_jobs_view():
         job_application_button.pack(side=RIGHT,padx=10,pady=20)
         view_button = Button(job_card,text="View Job",command=lambda:[view_jobs_frame.destroy(),view_jobs_menu_bar.destroy(),job_details_page(id)])
         view_button.pack(side=RIGHT,padx=10,pady=20)
+        job_done_button = Button(job_card,text="Job Completed",command=lambda:[job.mark_done_job(id),view_jobs_frame.destroy(),view_jobs_menu_bar.destroy(),job_rating(),job_details_page(id)])
+        job_done_button.pack(side=RIGHT,padx=10,pady=20)
 
         return job_card
 
@@ -681,7 +686,7 @@ def job_details_page(job_id):
     job_id_label.place(x=20,y=0)
     job_category_label = Label(form_frame,text="Category:\t\t"+spec_job["job_category"],background="grey",fg="whitesmoke",font=("Arial",15))
     job_category_label.place(x=20,y=50)
-    job_description_label = Label(form_frame,text="Description:\t"+spec_job["job_description"],background="grey",fg="whitesmoke",font=("Arial",15))
+    job_description_label = Label(form_frame,width=30,text="Description:\t"+spec_job["job_description"],background="grey",fg="whitesmoke",font=("Arial",15))
     job_description_label.place(x=20,y=100)
     date = spec_job["date_posted"]
     date_posted_label = Label(form_frame,text=f"Posted on:\t{date}",background="grey",fg="whitesmoke",font=("Arial",15))

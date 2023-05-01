@@ -88,3 +88,6 @@ class Job:
 
     def unselect_job_applicant(self,application_id):
         reverse_applicant(application_id)
+
+    def mark_done_job(self,job_id):
+        job_done(job_id)
