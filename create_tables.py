@@ -47,6 +47,7 @@ query = """
             done_by INT,
             job_duration VARCHAR(10),
             total_amount INT,
+            done_on DATE,
             FOREIGN KEY (posted_by) REFERENCES job_posters(id),
             FOREIGN KEY (done_by) REFERENCES job_seekers(id)
         );
