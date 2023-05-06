@@ -91,10 +91,25 @@ def home():
         password_label.place(x=20,y=230)
         password_entry = Entry(user_details_window,width=25,show="*")
         password_entry.place(x=160,y=230)
+
         confirm_password_label = Label(user_details_window,text="Confirm Password",background="grey",fg="whitesmoke",font=("Arial",12))
         confirm_password_label.place(x=20,y=270)
         confirm_password_entry = Entry(user_details_window,width=25,show="*")
         confirm_password_entry.place(x=160,y=270)
+
+        show_password = Button(user_details_window,text="Show Password",command=lambda:[toggle_show_hide_password()])
+        show_password.place(x=350,y=270)
+        
+        def toggle_show_hide_password():
+            if password_entry.cget("show") == "" and confirm_password_entry.cget("show") == "":
+                password_entry.config(show="*")
+                confirm_password_entry.config(show="*")
+                show_password.config(text="Show Password")
+            else:
+                password_entry.config(show="")
+                confirm_password_entry.config(show="")
+                show_password.config(text="Hide Password")
+
         register_button = Button(user_details_window,background="lavender",width=20,height=2,text="Register",command=lambda:[validate_registration_data()])
         register_button.place(x=250,y=320)
 
@@ -303,6 +318,19 @@ def registration_page():
         confirm_password_label.place(x=20,y=270)
         confirm_password_entry = Entry(user_details_window,width=25,show="*")
         confirm_password_entry.place(x=160,y=270)
+
+        show_password = Button(user_details_window,text="Show Password",command=lambda:[toggle_show_hide_password()])
+        show_password.place(x=350,y=270)
+        
+        def toggle_show_hide_password():
+            if password_entry.cget("show") == "" and confirm_password_entry.cget("show") == "":
+                password_entry.config(show="*")
+                confirm_password_entry.config(show="*")
+                show_password.config(text="Show Password")
+            else:
+                password_entry.config(show="")
+                confirm_password_entry.config(show="")
+                show_password.config(text="Hide Password")
 
         register_button = Button(user_details_window,background="lavender",width=20,height=2,text="Register",command=lambda:[validate_registration_data()])
         register_button.place(x=250,y=320)
@@ -686,8 +714,10 @@ def job_details_page(job_id):
     job_id_label.place(x=20,y=0)
     job_category_label = Label(form_frame,text="Category:\t\t"+spec_job["job_category"],background="grey",fg="whitesmoke",font=("Arial",15))
     job_category_label.place(x=20,y=50)
-    job_description_label = Label(form_frame,width=30,text="Description:\t"+spec_job["job_description"],background="grey",fg="whitesmoke",font=("Arial",15))
+    job_description_label = Label(form_frame,text="Description:\t",background="grey",fg="whitesmoke",font=("Arial",15))
     job_description_label.place(x=20,y=100)
+    job_description_label2 = Label(form_frame,wraplength=400,text=spec_job["job_description"],background="grey",fg="whitesmoke",font=("Arial",15))
+    job_description_label2.place(x=200,y=100)
     date = spec_job["date_posted"]
     date_posted_label = Label(form_frame,text=f"Posted on:\t{date}",background="grey",fg="whitesmoke",font=("Arial",15))
     date_posted_label.place(x=20,y=150)
@@ -722,4 +752,5 @@ def job_details_page(job_id):
         new3_nav.place(x=10,y=330)
 
     home_pg.mainloop()
+
 home()
