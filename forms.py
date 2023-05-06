@@ -222,15 +222,15 @@ def login_page():
         input_email = login_email_entry.get()
         login_user,user_type = user.login(input_email,input_password)
         if login_user is not None:
-            session["username"] = login_user[6]
+            session["username"] = login_user["email"]
             session["logged_in"] = True
             if user_type is "job_seeker":
-                session["session_id"] = login_user[11]
+                session["session_id"] = login_user["session_id"]
             else:
-                session["session_id"] = login_user[9]
+                session["session_id"] = login_user["session_id"]
             session["user_type"] = user_type
-            msg = login_user[1] + " " + login_user[2] +" successfully logged in"
-            messagebox.showinfo('message',msg)
+            msg = login_user["first_name"] + " " + login_user["last_name"] +" successfully logged in"
+            messagebox.showinfo('Login',msg)
             login_frame.destroy()
             login_menu_bar.destroy()
             home()
@@ -509,12 +509,24 @@ def view_jobs():
     form_frame = Canvas(view_jobs_frame,bg="gray",borderwidth=10)
     form_frame.pack(expand=True,fill=BOTH,padx=20,pady=20)
 
-    scrollbar.config(command=form_frame.yview)
-
-    form_frame.configure(yscrollcommand=scrollbar.set)
-
     inner_frame = Frame(form_frame,bg="gray")
     form_frame.create_window((10, 0), window=inner_frame, anchor="center")
+
+    search_frame = Frame(inner_frame,bg="gray")
+    search_frame.pack(fill=X)
+
+    names,ids = user.get_job_posters()
+
+    category_search = AutocompleteCombobox(search_frame,completevalues=["A","B","C"])
+    category_search.pack(side=LEFT,padx=10)
+    posted_by_search = AutocompleteCombobox(search_frame,completevalues=names)
+    posted_by_search.pack(side=LEFT,padx=10)
+    search_button = Button(search_frame,text="Search",command=lambda:[get_index()])
+    search_button.pack(side=LEFT,padx=10)
+
+    def get_index():
+        selected_index = posted_by_search.current()
+        print(ids[selected_index])
 
     jobs = job.get_jobs_posted()
 
@@ -557,6 +569,10 @@ def view_jobs():
     form_frame.update_idletasks()
     form_frame.configure(scrollregion=form_frame.bbox('all'))
 
+    scrollbar.config(command=form_frame.yview)
+    form_frame.config(yscrollcommand=scrollbar.set)
+    form_frame.yview_moveto(0.0)
+
     home_nav = Button(view_jobs_menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=5,command=lambda:[view_jobs_frame.destroy(),view_jobs_menu_bar.destroy(),home()])
     home_nav.place(x=10,y=10)
     login_nav = Button(view_jobs_menu_bar,background="lavender",width=15,height=3,text="Login",fg="black",bd=3,command=lambda: [view_jobs_frame.destroy(),view_jobs_menu_bar.destroy(),login_page()])
@@ -586,10 +602,6 @@ def job_posters_jobs_view():
     form_frame = Canvas(view_jobs_frame,bg="gray",borderwidth=10)
     form_frame.pack(expand=True,fill=BOTH,padx=20,pady=20)
 
-    scrollbar.config(command=form_frame.yview)
-
-    form_frame.configure(yscrollcommand=scrollbar.set)
-
     inner_frame = Frame(form_frame,bg="gray")
     form_frame.create_window((10, 0), window=inner_frame, anchor="center")
 
@@ -599,9 +611,8 @@ def job_posters_jobs_view():
         job_applications = job.get_job_applications(job_id)
         applicants_frame = Canvas(display_applicants_window)
 
-        scrollbar = Scrollbar(display_applicants_window,command=applicants_frame.yview)
-        scrollbar.pack(side="right",fill='y')
-        applicants_frame.configure(yscrollcommand=scrollbar.set)
+        applicant_scrollbar = Scrollbar(display_applicants_window,command=applicants_frame.yview)
+        applicant_scrollbar.pack(side="right",fill='y')
 
         def create_applicant_cards(card_label, date_applied, applicant_id,application_status):
             applicant_card = Frame(display_applicants_window,bg="gray",bd=2,relief="solid")
@@ -643,10 +654,13 @@ def job_posters_jobs_view():
                 applicant = user.get_job_seeker(application["applicant"])
                 applicant_card = create_applicant_cards(applicant,application["application_date"],application["application_id"],application["application_status"])
                 applicant_cards.append(applicant_card)
-                print(application["application_status"])
 
         applicants_frame.update_idletasks()
-        applicants_frame.configure(scrollregion=form_frame.bbox('all'))
+        applicants_frame.configure(scrollregion=applicants_frame.bbox('all'))
+        
+        applicants_frame.yview_moveto(0.0)
+        applicant_scrollbar.config(command=applicants_frame.yview)
+        applicants_frame.config(yscrollcommand=applicant_scrollbar.set)
 
         display_applicants_window.mainloop()
 
@@ -679,6 +693,10 @@ def job_posters_jobs_view():
 
     form_frame.update_idletasks()
     form_frame.configure(scrollregion=form_frame.bbox('all'))
+    form_frame.yview_moveto(0.0)
+
+    scrollbar.config(command=form_frame.yview)
+    form_frame.config(yscrollcommand=scrollbar.set)
 
     home_nav = Button(view_jobs_menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=5,command=lambda:[view_jobs_frame.destroy(),view_jobs_menu_bar.destroy(),home()])
     home_nav.place(x=10,y=10)
@@ -712,21 +730,28 @@ def job_details_page(job_id):
 
     job_id_label = Label(form_frame,text=f"Job J-{job_id}",background="grey",fg="whitesmoke",font=("Arial",20))
     job_id_label.place(x=20,y=0)
+
     job_category_label = Label(form_frame,text="Category:\t\t"+spec_job["job_category"],background="grey",fg="whitesmoke",font=("Arial",15))
     job_category_label.place(x=20,y=50)
+
     job_description_label = Label(form_frame,text="Description:\t",background="grey",fg="whitesmoke",font=("Arial",15))
     job_description_label.place(x=20,y=100)
+
     job_description_label2 = Label(form_frame,wraplength=400,text=spec_job["job_description"],background="grey",fg="whitesmoke",font=("Arial",15))
     job_description_label2.place(x=200,y=100)
+
     date = spec_job["date_posted"]
     date_posted_label = Label(form_frame,text=f"Posted on:\t{date}",background="grey",fg="whitesmoke",font=("Arial",15))
     date_posted_label.place(x=20,y=150)
+
     posted_user = user.get_job_poster(spec_job["posted_by"])
     posted_by_label = Label(form_frame,text=f"Posted by:\t" + posted_user,background="grey",fg="whitesmoke",font=("Arial",15))
     posted_by_label.place(x=20,y=200)
+
     done_by_user = user.get_job_seeker(spec_job["done_by"])
     posted_by_label = Label(form_frame,text=f"Done by:\t\t" + done_by_user,background="grey",fg="whitesmoke",font=("Arial",15))
     posted_by_label.place(x=20,y=250)
+
     if spec_job["job_duration"] is 'L':
         job_duration = "Large(More than one working day)"
     elif spec_job["job_duration"] is 'M':
@@ -735,6 +760,7 @@ def job_details_page(job_id):
         job_duration = "Small(1-5 hours)"
     duration_label = Label(form_frame,text=f"Job Duration by:\t" + job_duration,background="grey",fg="whitesmoke",font=("Arial",15))
     duration_label.place(x=20,y=300)
+
     job_cost = spec_job["total_amount"]
     job_cost_label = Label(form_frame,text=f"Price:\t\t{job_cost}" + " Kshs.",background="grey",fg="whitesmoke",font=("Arial",15))
     job_cost_label.place(x=20,y=350)
