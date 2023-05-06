@@ -46,6 +46,28 @@ class User:
         else:
             full_username = "Not selected yet"
         return full_username
+    
+    def get_job_posters(self):
+        job_posters = get_job_posters()
+        job_poster_names = []
+        job_poster_ids = []
+        for job_poster in job_posters:
+            job_poster_name = job_poster["first_name"] + " " + job_poster["last_name"]
+            job_poster_names.append(job_poster_name)
+            job_poster_id = job_poster["id"]
+            job_poster_ids.append(job_poster_id)
+        return job_poster_names,job_poster_ids
+    
+    def get_job_seekers(self):
+        job_posters = get_job_seekers()
+        job_poster_names = []
+        job_poster_ids = []
+        for job_poster in job_posters:
+            job_poster_name = job_poster["first_name"] + " " + job_poster["last_name"]
+            job_poster_names.append(job_poster_name)
+            job_poster_id = job_poster["id"]
+            job_poster_ids.append(job_poster_id)
+        return job_poster_names,job_poster_ids
 
 class Job:
     def save_job(self,session_id,job_category,job_description,job_duration,total_amount):

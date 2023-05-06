@@ -130,6 +130,32 @@ def get_users():
     conn.close()
     return users_list
 
+def get_job_posters():
+    conn = psycopg2.connect(database=db_name,user=db_user,host=db_host,port=db_port,password=db_password)
+    cur = conn.cursor(cursor_factory=DictCursor)
+
+    query = "SELECT id,first_name,last_name,email FROM job_posters;"
+    cur.execute(query)
+    users = cur.fetchall()
+
+    conn.commit()
+    cur.close()
+    conn.close()
+    return users
+
+def get_job_seekers():
+    conn = psycopg2.connect(database=db_name,user=db_user,host=db_host,port=db_port,password=db_password)
+    cur = conn.cursor(cursor_factory=DictCursor)
+
+    query = "SELECT id,first_name,last_name,email FROM job_seekers;"
+    cur.execute(query)
+    users = cur.fetchall()
+
+    conn.commit()
+    cur.close()
+    conn.close()
+    return users
+
 def add_job_to_db(session_id,job_data):
     conn = psycopg2.connect(database=db_name,user=db_user,host=db_host,port=db_port,password=db_password)
     cur = conn.cursor()
@@ -167,7 +193,7 @@ def get_jobs_posted_by_user(session_id):
     cur.execute(query1,(session_id,))
     user = cur.fetchone()
 
-    query = "SELECT * FROM jobs WHERE posted_by=%s AND job_status='false';"
+    query = "SELECT * FROM jobs WHERE posted_by=%s;"
     cur.execute(query,(user))
     jobs = cur.fetchall()
     all_jobs = [dict(job) for job in jobs]
