@@ -55,7 +55,7 @@ def hash_password(password):
 def get_user(email,input_password):
     new_password = hash_password(input_password)
     conn = psycopg2.connect(database=db_name,user=db_user,host=db_host,port=db_port,password=db_password)
-    cur = conn.cursor()
+    cur = conn.cursor(cursor_factory=DictCursor)
     query = """
                 UPDATE job_seekers SET session_id = %s WHERE  email = %s AND password = %s;
                 SELECT * FROM job_seekers WHERE email = %s AND password = %s;
@@ -78,7 +78,7 @@ def get_user(email,input_password):
     conn.commit()
     cur.close()
     conn.close()
-    return user,user_type
+    return dict(user),user_type
 
 def get_job_poster_by_id(id):
     conn = psycopg2.connect(database=db_name,user=db_user,host=db_host,port=db_port,password=db_password)
