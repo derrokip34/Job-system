@@ -779,4 +779,36 @@ def job_details_page(job_id):
 
     home_pg.mainloop()
 
+def profile_pg(user_id):
+    session["user_type"] = "job_seeker"
+    if session["user_type"] is "job_seeker":
+        profile,user_name = user.get_job_seeker(user_id)
+    elif session["user_type"] is "job_poster":
+        profile,user_name = user.get_job_poster(user_id)
+
+    home_pg.title(f"{user_name}'s Profile")
+
+    profile_page_menu_bar = Frame(home_pg,bg="dimgrey",width=150,height=1280)
+    profile_page_menu_bar.pack(side=LEFT)
+
+    profile_page_frame = Frame(home_pg,bg="wheat",borderwidth=10,width=550,height=1280)
+    profile_page_frame.pack(expand=True,fill=BOTH)
+
+    form_frame = Frame(profile_page_frame,bg="gray",borderwidth=10,height=1280)
+    form_frame.pack(expand=True,fill=BOTH,padx=20,pady=20)
+
+    home_nav = Button(profile_page_menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=5,command=lambda:[profile_page_frame.destroy(),profile_page_menu_bar.destroy(),home()])
+    home_nav.place(x=10,y=10)
+    login_nav = Button(profile_page_menu_bar,background="lavender",width=15,height=3,text="Login",fg="black",bd=3,command=lambda: [profile_page_frame.destroy(),profile_page_menu_bar.destroy(),login_page()])
+    login_nav.place(x=10,y=90)
+    if session["logged_in"] is True:
+        new1_nav = Button(profile_page_menu_bar,background="lavender",width=15,height=3,text="Post Job",fg="black",bd=3)
+        new1_nav.place(x=10,y=170)
+        new2_nav = Button(profile_page_menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3)
+        new2_nav.place(x=10,y=250)
+        new3_nav = Button(profile_page_menu_bar,background="lavender",width=15,height=3,text="Logout",fg="black",bd=3)
+        new3_nav.place(x=10,y=330)
+
+    home_pg.mainloop()
+
 home()

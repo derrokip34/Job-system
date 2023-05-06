@@ -36,16 +36,16 @@ class User:
 
     def get_job_poster(self,id):
         user = get_job_poster_by_id(id)
-        full_username = user[0] + " " + user[1]
-        return full_username
+        full_username = user["first_name"] + " " + user["last_name"]
+        return user,full_username
     
     def get_job_seeker(self,id):
         user = get_job_seeker_by_id(id)
         if user is not None:
-            full_username = user[0] + " " + user[1]
+            full_username = user["first_name"] + " " + user["last_name"]
         else:
             full_username = "Not selected yet"
-        return full_username
+        return user,full_username
     
     def get_job_posters(self):
         job_posters = get_job_posters()
