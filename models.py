@@ -114,6 +114,6 @@ class Job:
     def mark_done_job(self,job_id):
         job_done(job_id)
 
-    def get_job_posted_by_user(self,user_id):
-        jobs = get_jobs_posted_by(user_id)
+    def search_jobs(self,user_id,job_category):
+        jobs = search_jobs(user_id,job_category)
         return jobs

@@ -522,14 +522,16 @@ def view_jobs():
     category_search.pack(side=LEFT,padx=10)
     posted_by_search = AutocompleteCombobox(search_frame,completevalues=names)
     posted_by_search.pack(side=LEFT,padx=10)
-    search_button = Button(search_frame,text="Search",command=lambda:[get_index()])
+    search_button = Button(search_frame,text="Search",command=lambda:[search_jobs(),create_cards_function()])
     search_button.pack(side=LEFT,padx=10)
 
-    def get_index():
+    def search_jobs():
         selected_index = posted_by_search.current()
-        print(ids[selected_index])
-
-    jobs = job.get_jobs_posted()
+        if selected_index >= 0:
+            searched_jobs = job.search_jobs(ids[selected_index],category_search.get())
+        else:
+            searched_jobs = job.get_jobs_posted()
+        return searched_jobs
 
     applications = job.get_application(session["session_id"])
 
@@ -563,16 +565,25 @@ def view_jobs():
 
     cards = []
 
-    for a_job in jobs:
-        card = create_card(inner_frame,a_job["job_category"],a_job["job_description"],a_job["job_id"])
-        cards.append(card)
+    def create_cards_function():
+        for widg in inner_frame.winfo_children():
+            if widg != search_frame:
+                widg.destroy()
+        jobs = search_jobs()
 
+        for a_job in jobs:
+            card = create_card(inner_frame,a_job["job_category"],a_job["job_description"],a_job["job_id"])
+            cards.append(card)
+
+        form_frame.update_idletasks()
+        form_frame.configure(scrollregion=form_frame.bbox('all'))
+        form_frame.yview_moveto(0.0)
+    
     form_frame.update_idletasks()
     form_frame.configure(scrollregion=form_frame.bbox('all'))
-
+    form_frame.yview_moveto(0.0)
     scrollbar.config(command=form_frame.yview)
     form_frame.config(yscrollcommand=scrollbar.set)
-    form_frame.yview_moveto(0.0)
 
     home_nav = Button(view_jobs_menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=5,command=lambda:[view_jobs_frame.destroy(),view_jobs_menu_bar.destroy(),home()])
     home_nav.place(x=10,y=10)

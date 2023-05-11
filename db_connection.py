@@ -203,12 +203,12 @@ def get_jobs_posted_by_user(session_id):
     conn.close()
     return all_jobs
 
-def get_jobs_posted_by(user_id):
+def search_jobs(user_id,category):
     conn = psycopg2.connect(database=db_name,user=db_user,host=db_host,port=db_port,password=db_password)
     cur = conn.cursor(cursor_factory=DictCursor)
 
-    query = "SELECT * FROM jobs WHERE posted_by=%s;"
-    cur.execute(query,(user_id,))
+    query = "SELECT * FROM jobs WHERE posted_by=%s OR job_category=%s;"
+    cur.execute(query,(user_id,category,))
     jobs = cur.fetchall()
     all_jobs = [dict(job) for job in jobs]
     
