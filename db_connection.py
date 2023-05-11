@@ -203,6 +203,20 @@ def get_jobs_posted_by_user(session_id):
     conn.close()
     return all_jobs
 
+def get_jobs_posted_by(user_id):
+    conn = psycopg2.connect(database=db_name,user=db_user,host=db_host,port=db_port,password=db_password)
+    cur = conn.cursor(cursor_factory=DictCursor)
+
+    query = "SELECT * FROM jobs WHERE posted_by=%s;"
+    cur.execute(query,(user_id,))
+    jobs = cur.fetchall()
+    all_jobs = [dict(job) for job in jobs]
+    
+    conn.commit()
+    cur.close()
+    conn.close()
+    return all_jobs
+
 def insert_application_to_db(session_id,job_id):
     conn = psycopg2.connect(database=db_name,user=db_user,host=db_host,port=db_port,password=db_password)
     cur = conn.cursor()
