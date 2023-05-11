@@ -21,7 +21,6 @@ query = """
             gender VARCHAR(2),
             dob DATE,
             password VARCHAR(70),
-            rating INT,
             session_id UUID
         );
         CREATE TABLE job_seekers(
@@ -49,6 +48,7 @@ query = """
             total_amount INT,
             done_on DATE,
             job_status VARCHAR(10),
+            rating INT,
             FOREIGN KEY (posted_by) REFERENCES job_posters(id),
             FOREIGN KEY (done_by) REFERENCES job_seekers(id)
         );
@@ -61,7 +61,19 @@ query = """
             FOREIGN KEY (applicant) REFERENCES job_seekers(id),
             FOREIGN KEY (job) REFERENCES jobs(job_id)
         );
+        CREATE TABLE job_ratings(
+            rating_value INT,
+            job_rated INT,
+            job_seeker_rated INT,
+            FOREIGN KEY (job_rated) REFERENCES jobs(job_id),
+            FOREIGN KEY (job_seeker_rated) REFERENCES job_seekers(id)
+        );
+        CREATE TABLE job_categories(
+            category_id SERIAL PRIMARY KEY,
+            category VARCHAR(40)
+        );
         """
+
 cur.execute(query)
 conn.commit()
 cur.close()
