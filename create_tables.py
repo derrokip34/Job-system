@@ -57,7 +57,7 @@ query = """
             job_status VARCHAR(10),
             rating INT,
             job_location VARCHAR(30),
-            updated_on DATETIME,
+            updated_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (posted_by) REFERENCES job_posters(id),
             FOREIGN KEY (done_by) REFERENCES job_seekers(id)
         );
