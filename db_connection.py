@@ -78,12 +78,12 @@ def get_user(email,input_password):
     conn.commit()
     cur.close()
     conn.close()
-    return dict(user),user_type
+    return user,user_type
 
 def get_job_poster_by_id(id):
     conn = psycopg2.connect(database=db_name,user=db_user,host=db_host,port=db_port,password=db_password)
     cur = conn.cursor(cursor_factory=DictCursor)
-    query = "SELECT first_name,last_name FROM job_posters WHERE id = %s;"
+    query = "SELECT * FROM job_posters WHERE id = %s;"
     cur.execute(query,(id,))
     user = cur.fetchone()
     conn.commit()
@@ -94,7 +94,7 @@ def get_job_poster_by_id(id):
 def get_job_seeker_by_id(id):
     conn = psycopg2.connect(database=db_name,user=db_user,host=db_host,port=db_port,password=db_password)
     cur = conn.cursor(cursor_factory=DictCursor)
-    query = "SELECT first_name,last_name FROM job_seekers WHERE id = %s;"
+    query = "SELECT * FROM job_seekers WHERE id = %s;"
     cur.execute(query,(id,))
     user = cur.fetchone()
     conn.commit()
@@ -160,14 +160,13 @@ def add_job_to_db(session_id,job_data):
     conn = psycopg2.connect(database=db_name,user=db_user,host=db_host,port=db_port,password=db_password)
     cur = conn.cursor()
 
-    formatted_date = date.today()
     job_status = "false"
     
     query = "SELECT id FROM job_posters WHERE session_id=%s;"
     cur.execute(query,(session_id,))
     posted_by = cur.fetchone()
-    add_job_query = "INSERT INTO jobs(job_category,job_description,date_posted,posted_by,job_duration,total_amount,job_status) VALUES(%s,%s,%s,%s,%s,%s,%s);"
-    cur.execute(add_job_query,(job_data["job_category"],job_data["job_description"],formatted_date,posted_by[0],job_data["job_duration"],int(job_data["total_amount"]),job_status,))
+    add_job_query = "INSERT INTO jobs(job_category,job_description,date_posted,posted_by,job_duration,total_amount,job_status,job_location) VALUES(%s,%s,%s,%s,%s,%s,%s);"
+    cur.execute(add_job_query,(job_data["job_category"],job_data["job_description"],posted_by[0],job_data["job_duration"],int(job_data["total_amount"]),job_status,job_data["job_location"],))
 
     conn.commit()
     cur.close()
@@ -179,12 +178,11 @@ def get_all_jobs():
     query = "SELECT * FROM jobs;"
     cur.execute(query)
     jobs = cur.fetchall()
-    all_jobs = [dict(job) for job in jobs]
     
     conn.commit()
     cur.close()
     conn.close()
-    return all_jobs
+    return jobs
 
 def get_jobs_posted_by_user(session_id):
     conn = psycopg2.connect(database=db_name,user=db_user,host=db_host,port=db_port,password=db_password)
@@ -196,12 +194,11 @@ def get_jobs_posted_by_user(session_id):
     query = "SELECT * FROM jobs WHERE posted_by=%s;"
     cur.execute(query,(user))
     jobs = cur.fetchall()
-    all_jobs = [dict(job) for job in jobs]
     
     conn.commit()
     cur.close()
     conn.close()
-    return all_jobs
+    return jobs
 
 def search_jobs(user_id,category):
     conn = psycopg2.connect(database=db_name,user=db_user,host=db_host,port=db_port,password=db_password)
@@ -210,12 +207,11 @@ def search_jobs(user_id,category):
     query = "SELECT * FROM jobs WHERE posted_by=%s OR job_category=%s;"
     cur.execute(query,(user_id,category,))
     jobs = cur.fetchall()
-    all_jobs = [dict(job) for job in jobs]
     
     conn.commit()
     cur.close()
     conn.close()
-    return all_jobs
+    return jobs
 
 def insert_application_to_db(session_id,job_id):
     conn = psycopg2.connect(database=db_name,user=db_user,host=db_host,port=db_port,password=db_password)
