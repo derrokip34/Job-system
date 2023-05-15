@@ -35,7 +35,7 @@ def save_job_poster_to_db(data):
 def get_areas():
     conn = psycopg2.connect(database=db_name,user=db_user,host=db_host,port=db_port,password=db_password)
     cur = conn.cursor()
-    query = "SELECT area_name FROM areas;"
+    query = "SELECT area FROM areas;"
     cur.execute(query)
     areas = cur.fetchall()
     columns = [area[0] for area in areas]
@@ -200,12 +200,17 @@ def get_jobs_posted_by_user(session_id):
     conn.close()
     return jobs
 
-def search_jobs(user_id,category):
+def search_jobs(category,duration1,duration2,payment1,payment2,location):
     conn = psycopg2.connect(database=db_name,user=db_user,host=db_host,port=db_port,password=db_password)
     cur = conn.cursor(cursor_factory=DictCursor)
 
-    query = "SELECT * FROM jobs WHERE posted_by=%s OR job_category=%s;"
-    cur.execute(query,(user_id,category,))
+    query = """
+            SELECT * FROM jobs WHERE job_duration BETWEEN %s AND %s 
+                                     OR job_category=%s
+                                     OR total_amount BETWEEN %s AND %s
+                                     OR job_location=%s;
+            """
+    cur.execute(query,(duration1,duration2,category,payment1,payment2,location,))
     jobs = cur.fetchall()
     
     conn.commit()

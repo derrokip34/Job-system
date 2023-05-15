@@ -115,6 +115,13 @@ class Job:
     def mark_done_job(self,job_id):
         job_done(job_id)
 
-    def search_jobs(self,user_id,job_category):
-        jobs = search_jobs(user_id,job_category)
+    def search_jobs(self,job_category,dur1,dur2,pay1,pay2,location):
+        jobs = search_jobs(job_category,dur1,dur2,pay1,pay2,location)
         return jobs
+    
+def get_areas_array():
+    areas = get_areas()
+    areas_array = []
+    for area in areas:
+        areas_array.append(area)
+    return areas_array
