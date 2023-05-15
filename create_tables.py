@@ -56,7 +56,6 @@ query = """
             done_on TIMESTAMP,
             job_status VARCHAR(10),
             rating INT,
-            comment VARCHAR(255),
             job_location VARCHAR(30),
             updated_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (posted_by) REFERENCES job_posters(id),
@@ -74,6 +73,7 @@ query = """
         CREATE TABLE job_ratings(
             rating_id SERIAL PRIMARY KEY,
             rating_value INT,
+            comment VARCHAR(255),
             job_rated INT,
             FOREIGN KEY (job_rated) REFERENCES jobs(job_id)
         );
