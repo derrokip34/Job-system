@@ -72,11 +72,10 @@ query = """
             FOREIGN KEY (job) REFERENCES jobs(job_id)
         );
         CREATE TABLE job_ratings(
+            rating_id SERIAL PRIMARY KEY,
             rating_value INT,
             job_rated INT,
-            job_seeker_rated INT,
-            FOREIGN KEY (job_rated) REFERENCES jobs(job_id),
-            FOREIGN KEY (job_seeker_rated) REFERENCES job_seekers(id)
+            FOREIGN KEY (job_rated) REFERENCES jobs(job_id)
         );
         CREATE TABLE job_categories(
             category_id SERIAL PRIMARY KEY,
