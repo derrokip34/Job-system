@@ -78,12 +78,12 @@ def get_user(email,input_password):
     conn.commit()
     cur.close()
     conn.close()
-    return dict(user),user_type
+    return user,user_type
 
 def get_job_poster_by_id(id):
     conn = psycopg2.connect(database=db_name,user=db_user,host=db_host,port=db_port,password=db_password)
     cur = conn.cursor(cursor_factory=DictCursor)
-    query = "SELECT first_name,last_name FROM job_posters WHERE id = %s;"
+    query = "SELECT * FROM job_posters WHERE id = %s;"
     cur.execute(query,(id,))
     user = cur.fetchone()
     conn.commit()
@@ -94,7 +94,7 @@ def get_job_poster_by_id(id):
 def get_job_seeker_by_id(id):
     conn = psycopg2.connect(database=db_name,user=db_user,host=db_host,port=db_port,password=db_password)
     cur = conn.cursor(cursor_factory=DictCursor)
-    query = "SELECT first_name,last_name FROM job_seekers WHERE id = %s;"
+    query = "SELECT * FROM job_seekers WHERE id = %s;"
     cur.execute(query,(id,))
     user = cur.fetchone()
     conn.commit()
@@ -336,3 +336,7 @@ def job_done(job_id):
     conn.commit()
     cur.close()
     conn.close()
+
+user,type = get_user("rrickip34@gmail.com","Enkay2008")
+
+print(user)

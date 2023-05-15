@@ -37,7 +37,7 @@ class User:
     def get_job_poster(self,id):
         user = get_job_poster_by_id(id)
         full_username = user["first_name"] + " " + user["last_name"]
-        return user,full_username
+        return full_username
     
     def get_job_seeker(self,id):
         user = get_job_seeker_by_id(id)
@@ -45,7 +45,7 @@ class User:
             full_username = user["first_name"] + " " + user["last_name"]
         else:
             full_username = "Not selected yet"
-        return user,full_username
+        return full_username
     
     def get_job_posters(self):
         job_posters = get_job_posters()
