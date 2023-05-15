@@ -21,6 +21,9 @@ query = """
             gender VARCHAR(2),
             dob DATE,
             password VARCHAR(70),
+            profile_pic_path VARCHAR(100),
+            overview VARCHAR(200),
+            location VARCHAR(50),
             session_id UUID
         );
         CREATE TABLE job_seekers(
@@ -35,20 +38,26 @@ query = """
             category VARCHAR(40),
             area VARCHAR(40),
             rating INT,
+            profile_pic_path VARCHAR(100),
+            overview VARCHAR(200),
+            days_availability VARCHAR(100),
+            hours_availability VARCHAR(20),
             session_id UUID
         );
         CREATE TABLE jobs(
             job_id SERIAL PRIMARY KEY,
             job_category VARCHAR(40),
             job_description VARCHAR(255),
-            date_posted DATE,
+            date_posted TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             posted_by INT,
             done_by INT,
-            job_duration VARCHAR(10),
+            job_duration INT,
             total_amount INT,
             done_on DATE,
             job_status VARCHAR(10),
             rating INT,
+            job_location VARCHAR(30),
+            updated_on DATETIME,
             FOREIGN KEY (posted_by) REFERENCES job_posters(id),
             FOREIGN KEY (done_by) REFERENCES job_seekers(id)
         );

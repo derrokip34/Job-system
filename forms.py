@@ -42,8 +42,8 @@ def home():
     form_frame.pack(expand=True,fill=BOTH,padx=20,pady=20)
 
     if session["logged_in"] is False:
-        Button(form_frame,text="Job Seeker",command=lambda:[home_frame.destroy(),home_menu_bar.destroy(),registration_page()]).place(x=100,y=30)
-        Button(form_frame,text="Job Poster",command=lambda:[job_poster_form()]).place(x=20,y=30)
+        Button(form_frame,text="Job Seeker",command=lambda:[home_frame.destroy(),home_menu_bar.destroy(),registration_page("job_seeker")]).place(x=100,y=30)
+        Button(form_frame,text="Job Poster",command=lambda:[home_frame.destroy(),home_menu_bar.destroy(),registration_page("job_poster")]).place(x=20,y=30)
     else:
         Button(form_frame,text="Logout",command=lambda:[home_menu_bar.destroy(),home_frame.destroy(),logout()]).place(x=20,y=30)
 
@@ -255,7 +255,7 @@ def login_page():
 
     home_pg.mainloop()
 
-def registration_page():
+def registration_page(user_type):
     home_pg.title("Login")
 
     registration_menu_bar = Frame(home_pg,bg="dimgrey",width=150,height=1280)
@@ -343,7 +343,8 @@ def registration_page():
             area = area_entry.get()
             phone_num = phone_no_entry.get()
             email = email_entry.get()
-            category = specialty_entry.get()
+            if user_type is "job_seeker":
+                category = specialty_entry.get()
             day_of_birth = day_entry.get()
             month_of_birth = month_entry.get()
             year_of_birth = year_entry.get()
@@ -373,18 +374,31 @@ def registration_page():
                 global registration_data
                 date_of_birth = get_date_of_birth(day_of_birth,month_of_birth,year_of_birth)
                 hashed_password = hash_password(password)
-                registration_data = {
-                    "first_name": first_name,
-                    "last_name": last_name,
-                    "gender": gender,
-                    "dob": date_of_birth,
-                    "area": area,
-                    "phone_no": phone_num,
-                    "email": email,
-                    "category": category,
-                    "password":hashed_password
-                }
-                user.job_seeker_registration(registration_data["first_name"],registration_data["last_name"],registration_data["email"],registration_data["phone_no"],registration_data["gender"],registration_data["dob"],registration_data["category"],registration_data["area"],registration_data["password"])
+                if user_type is "job_seeker":
+                    registration_data = {
+                        "first_name": first_name,
+                        "last_name": last_name,
+                        "gender": gender,
+                        "dob": date_of_birth,
+                        "area": area,
+                        "phone_no": phone_num,
+                        "email": email,
+                        "category": category,
+                        "password":hashed_password
+                    }
+                    user.job_seeker_registration(registration_data["first_name"],registration_data["last_name"],registration_data["email"],registration_data["phone_no"],registration_data["gender"],registration_data["dob"],registration_data["category"],registration_data["area"],registration_data["password"])
+                elif user_type is "job_poster":
+                    registration_data = {
+                        "first_name": first_name,
+                        "last_name": last_name,
+                        "gender": gender,
+                        "dob": date_of_birth,
+                        "area": area,
+                        "phone_no": phone_num,
+                        "email": email,
+                        "password":hashed_password
+                    }
+                    user.job_poster_registration(registration_data["first_name"],registration_data["last_name"],registration_data["email"],registration_data["phone_no"],registration_data["gender"],registration_data["dob"],registration_data["password"])
                 messagebox.showinfo('message',"User succesfully added\nProceed to Login")
                 user_details_window.destroy()
                 registration_frame.destroy()
@@ -393,13 +407,15 @@ def registration_page():
 
         user_details_window.mainloop()
 
-    specialty_label = Label(form_frame,text="Choose a Category",background="grey",fg="whitesmoke",font=("Arial",12))
-    specialty_label.pack(fill=NONE,anchor=CENTER,pady=10)
-    var2 = StringVar(form_frame)
-    var2.set("Delivery")
-    categories0 = ["Delivery","Electrictian","Farming","Laundry Services"]
-    specialty_entry = AutocompleteCombobox(form_frame,completevalues=categories0)
-    specialty_entry.pack(fill=NONE,anchor=CENTER,pady=10)
+    if user_type is "job_seeker":
+        specialty_label = Label(form_frame,text="Choose a Category",background="grey",fg="whitesmoke",font=("Arial",12))
+        specialty_label.pack(fill=NONE,anchor=CENTER,pady=10)
+        var2 = StringVar(form_frame)
+        var2.set("Delivery")
+        categories0 = ["Delivery","Electrictian","Farming","Laundry Services"]
+        global specialty_entry
+        specialty_entry = AutocompleteCombobox(form_frame,completevalues=categories0)
+        specialty_entry.pack(fill=NONE,anchor=CENTER,pady=10)
 
     areas = ["Balozi Road","Chuna"]
     area_label = Label(form_frame,text="Which area are you from",background="grey",fg="whitesmoke",font=("Arial",12))
@@ -449,29 +465,53 @@ def post_job_form():
 
     description_label = Label(form_frame,text="Job Description ",background="grey",fg="whitesmoke",font=("Arial",12))
     description_label.place(x=0,y=70)
-    description_entry = Text(form_frame,width=25,height=5)
+    description_entry = Text(form_frame,width=60,height=7)
     description_entry.place(x=150,y=70)
 
-    job_duration_label = Label(form_frame,text="Job length/duration",background="grey",fg="whitesmoke",font=("Arial",12))
-    job_duration_label.place(x=0,y=170)
-    global job_duration_var
-    job_duration_var = StringVar(None,"S")
-    Radiobutton(form_frame,text="Small  (1-5 hours)",value="S",background="grey",variable=job_duration_var).place(x=160,y=170)
-    Radiobutton(form_frame,text="Medium (5-12 hours)",value="M",background="grey",variable=job_duration_var).place(x=160,y=190)
-    Radiobutton(form_frame,text="Large  (More than one working day)",value="L",background="grey",variable=job_duration_var).place(x=160,y=210)
+    duration_label = Label(form_frame,text="Job Duration(in hours)",background="grey",fg="whitesmoke",font=("Arial",12))
+    duration_label.place(x=0,y=200)
+    value_label = Label(form_frame, text="0", background="white",width=3)
+    value_label.place(x=200, y=200)
+    MAX_VALUE = 8
+    MIN_VALUE = 1
+    def increment():
+        current_value = int(value_label['text'])
+        if current_value < MAX_VALUE:
+            new_value = current_value + 1
+            value_label['text'] = str(new_value)
+    def decrement():
+        current_value = int(value_label['text'])
+        if current_value > MIN_VALUE:
+            new_value = current_value - 1
+            value_label['text'] = str(new_value)
+    def get_value():
+        return int(value_label["text"])
+    increment_button = Button(form_frame, text="+", height=1,command=increment)
+    increment_button.place(x=260, y=200)
+    decrement_button = Button(form_frame, text="-", height=1, command=decrement)
+    decrement_button.place(x=160, y=200)
     
     amount_label = Label(form_frame,text="Amount",background="grey",fg="whitesmoke",font=("Arial",12))
     amount_label.place(x=0,y=240)
     amount_entry = Entry(form_frame,width=10)
     amount_entry.place(x=160,y=240)
+    p_hr_label = Label(form_frame,text="/hr",background="grey",fg="whitesmoke",font=("Arial",12))
+    p_hr_label.place(x=220,y=240)
+
+    job_location_label =Label(form_frame,text="Amount",background="grey",fg="whitesmoke",font=("Arial",12))
+    job_location_label.place(x=0,y=280)
+    areas = ["Balozi Road","Chuna"]
+    area_entry = AutocompleteCombobox(form_frame,completevalues=areas)
+    area_entry.place(x=160,y=280)
 
     def save_job_data():
         input_job_category = category_entry.get()
         input_job_description = description_entry.get("1.0","end")
-        input_job_duration = job_duration_var.get()
-        input_job_amount = amount_entry.get()
+        input_job_duration = get_value()
+        input_job_rate = amount_entry.get()
+        input_job_location = area_entry.get()
 
-        job.save_job(session["session_id"],input_job_category,input_job_description,input_job_duration,input_job_amount)
+        job.save_job(session["session_id"],input_job_category,input_job_description,input_job_duration,input_job_rate,input_job_location)
 
         messagebox.showinfo("Job Posted","Job Posted Succesfully")
         post_job_frame.destroy()
@@ -479,7 +519,7 @@ def post_job_form():
         home()
 
     post_job_button = Button(form_frame,background="lavender",width=15,text="Post Job",command=lambda: [save_job_data()])
-    post_job_button.place(x=240,y=300)
+    post_job_button.place(x=240,y=340)
 
     home_nav = Button(post_job_menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3,command=lambda:[post_job_frame.destroy(),post_job_menu_bar.destroy(),home()])
     home_nav.place(x=10,y=10)
@@ -518,7 +558,7 @@ def view_jobs():
 
     names,ids = user.get_job_posters()
 
-    category_search = AutocompleteCombobox(search_frame,completevalues=["A","B","C"])
+    category_search = AutocompleteCombobox(search_frame,completevalues=["Electrictian","Delivery Person","Laundry Services"])
     category_search.pack(side=LEFT,padx=10)
     posted_by_search = AutocompleteCombobox(search_frame,completevalues=names)
     posted_by_search.pack(side=LEFT,padx=10)
@@ -760,9 +800,12 @@ def job_details_page(job_id):
     posted_by_label = Label(form_frame,text=f"Posted by:\t" + posted_user,background="grey",fg="whitesmoke",font=("Arial",15))
     posted_by_label.place(x=20,y=200)
 
-    done_by_user = user.get_job_seeker(spec_job["done_by"])
-    posted_by_label = Label(form_frame,text=f"Done by:\t\t" + done_by_user,background="grey",fg="whitesmoke",font=("Arial",15))
-    posted_by_label.place(x=20,y=250)
+    if spec_job["done_by"]  is not None:
+        done_by_user = user.get_job_seeker(spec_job["done_by"])
+    else:
+        done_by_user = "No one selected yet"
+    done_by_label = Label(form_frame,text=f"Done by:\t\t" + done_by_user,background="grey",fg="whitesmoke",font=("Arial",15))
+    done_by_label.place(x=20,y=250)
 
     if spec_job["job_duration"] is 'L':
         job_duration = "Large(More than one working day)"
@@ -826,9 +869,9 @@ def profile_pg(user_id):
 def set_profile(user_id):
     session["user_type"] = "job_seeker"
     if session["user_type"] is "job_seeker":
-        profile,user_name = user.get_job_seeker(user_id)
+        user_name = user.get_job_seeker(user_id)
     elif session["user_type"] is "job_poster":
-        profile,user_name = user.get_job_poster(user_id)
+        user_name = user.get_job_poster(user_id)
 
     home_pg.title(f"{user_name}'s Profile")
 
@@ -840,6 +883,12 @@ def set_profile(user_id):
 
     form_frame = Frame(set_profile_frame,bg="gray",borderwidth=10,height=1280)
     form_frame.pack(expand=True,fill=BOTH,padx=20,pady=20)
+
+    img =Image.open("profile_pics/anonymous.png")
+    img = img.resize((100, 100))
+    tk_img = ImageTk.PhotoImage(img)
+    img_label = Label(form_frame, image=tk_img)
+    img_label.pack(anchor=NW)
 
     home_nav = Button(set_profile_menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=5,command=lambda:[set_profile_frame.destroy(),set_profile_menu_bar.destroy(),home()])
     home_nav.place(x=10,y=10)
