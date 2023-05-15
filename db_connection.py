@@ -160,14 +160,13 @@ def add_job_to_db(session_id,job_data):
     conn = psycopg2.connect(database=db_name,user=db_user,host=db_host,port=db_port,password=db_password)
     cur = conn.cursor()
 
-    formatted_date = date.today()
     job_status = "false"
     
     query = "SELECT id FROM job_posters WHERE session_id=%s;"
     cur.execute(query,(session_id,))
     posted_by = cur.fetchone()
-    add_job_query = "INSERT INTO jobs(job_category,job_description,date_posted,posted_by,job_duration,total_amount,job_status) VALUES(%s,%s,%s,%s,%s,%s,%s);"
-    cur.execute(add_job_query,(job_data["job_category"],job_data["job_description"],formatted_date,posted_by[0],job_data["job_duration"],int(job_data["total_amount"]),job_status,))
+    add_job_query = "INSERT INTO jobs(job_category,job_description,date_posted,posted_by,job_duration,total_amount,job_status,job_location) VALUES(%s,%s,%s,%s,%s,%s,%s);"
+    cur.execute(add_job_query,(job_data["job_category"],job_data["job_description"],posted_by[0],job_data["job_duration"],int(job_data["total_amount"]),job_status,job_data["job_location"],))
 
     conn.commit()
     cur.close()
@@ -336,7 +335,3 @@ def job_done(job_id):
     conn.commit()
     cur.close()
     conn.close()
-
-user,type = get_user("rrickip34@gmail.com","Enkay2008")
-
-print(user)

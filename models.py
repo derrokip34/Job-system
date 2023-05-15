@@ -70,12 +70,13 @@ class User:
         return job_poster_names,job_poster_ids
 
 class Job:
-    def save_job(self,session_id,job_category,job_description,job_duration,total_amount):
+    def save_job(self,session_id,job_category,job_description,job_duration,total_amount,job_location):
         job_data = {
             "job_category": job_category,
             "job_description": job_description,
             "job_duration": job_duration,
-            "total_amount": total_amount
+            "total_amount": total_amount,
+            "job_location": job_location
         }
         add_job_to_db(session_id,job_data)
 
