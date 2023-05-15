@@ -45,7 +45,7 @@ def home():
         Button(form_frame,text="Job Seeker",command=lambda:[home_frame.destroy(),home_menu_bar.destroy(),registration_page("job_seeker")]).place(x=100,y=30)
         Button(form_frame,text="Job Poster",command=lambda:[home_frame.destroy(),home_menu_bar.destroy(),registration_page("job_poster")]).place(x=20,y=30)
     else:
-        Button(form_frame,text="Logout",command=lambda:[home_menu_bar.destroy(),home_frame.destroy(),logout()]).place(x=20,y=30)
+        Button(form_frame,text="View Jobs",command=lambda:[]).place(x=20,y=30)
 
     home_nav = Button(home_menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3)
     home_nav.place(x=10,y=10)
@@ -60,7 +60,7 @@ def home():
         else:
             new2_nav = Button(home_menu_bar,background="lavender",width=15,height=3,text="View Jobs",fg="black",bd=3,command=lambda: [home_frame.destroy(),home_menu_bar.destroy(),job_posters_jobs_view()])
             new2_nav.place(x=10,y=250)
-        new3_nav = Button(home_menu_bar,background="lavender",width=15,height=3,text="Logout",fg="black",bd=3)
+        new3_nav = Button(home_menu_bar,background="lavender",width=15,height=3,text="Logout",fg="black",bd=3, command=lambda:[home_frame.destroy(),home_menu_bar.destroy(),logout()])
         new3_nav.place(x=10,y=330)
 
     home_pg.mainloop()
