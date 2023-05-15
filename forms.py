@@ -1,8 +1,8 @@
 from tkinter import *
 from tkinter import messagebox
 from ttkwidgets.autocomplete import AutocompleteCombobox
-from models import User,Job
-import re
+from models import User,Job,get_areas_array
+import re,datetime
 from validate import *
 from PIL import Image,ImageTk
 
@@ -10,7 +10,8 @@ session = {
     "username": None,
     "session_id": None,
     "user_type": None,
-    "logged_in": False
+    "logged_in": False,
+    "category": None
 }
 user = User()
 job =Job()
@@ -26,6 +27,7 @@ def logout():
     session["session_id"] = None
     session["user_type"] = None
     session["username"] = None
+    session["category"] = None
     messagebox.showinfo("Log Out","User Logged out")
     home()
 
@@ -106,10 +108,11 @@ def login_page():
             session["username"] = login_user["email"]
             session["logged_in"] = True
             if user_type is "job_seeker":
-                session["session_id"] = login_user["session_id"]
+                session["category"] = login_user["category"]
             else:
-                session["session_id"] = login_user["session_id"]
+                session["category"] = None
             session["user_type"] = user_type
+            session["session_id"] = login_user["session_id"]
             msg = login_user["first_name"] + " " + login_user["last_name"] +" successfully logged in"
             messagebox.showinfo('Login',msg)
             login_frame.destroy()
@@ -130,7 +133,7 @@ def login_page():
         new1_nav.place(x=10,y=170)
         new2_nav = Button(login_menu_bar,background="lavender",width=15,height=3,text="View Jobs",fg="black",bd=3,command=lambda: [login_frame.destroy(),login_menu_bar.destroy(),view_jobs()])
         new2_nav.place(x=10,y=250)
-        new3_nav = Button(login_menu_bar,background="lavender",width=15,height=3,text="Logout",fg="black",bd=3)
+        new3_nav = Button(login_menu_bar,background="lavender",width=15,height=3,text="Logout",fg="black",bd=3,command=lambda:[login_frame.destroy(),login_menu_bar.destroy(),logout()])
         new3_nav.place(x=10,y=330)
 
     home_pg.mainloop()
@@ -318,7 +321,7 @@ def registration_page(user_type):
         new1_nav.place(x=10,y=170)
         new2_nav = Button(registration_menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3)
         new2_nav.place(x=10,y=250)
-        new3_nav = Button(registration_menu_bar,background="lavender",width=15,height=3,text="Logout",fg="black",bd=3)
+        new3_nav = Button(registration_menu_bar,background="lavender",width=15,height=3,text="Logout",fg="black",bd=3,command=lambda:[registration_frame.destroy(),registration_menu_bar.destroy(),logout()])
         new3_nav.place(x=10,y=330)
 
     home_pg.mainloop()
@@ -386,7 +389,7 @@ def post_job_form():
 
     def save_job_data():
         input_job_category = category_entry.get()
-        input_job_description = description_entry.get("1.0","end")
+        input_job_description = description_entry.get("1.0","end-1c")
         input_job_duration = get_value()
         input_job_rate = amount_entry.get()
         input_job_location = area_entry.get()
@@ -410,7 +413,7 @@ def post_job_form():
         new1_nav.place(x=10,y=170)
         new2_nav = Button(post_job_menu_bar,background="lavender",width=15,height=3,text="View Jobs",fg="black",bd=3)
         new2_nav.place(x=10,y=250)
-        new3_nav = Button(post_job_menu_bar,background="lavender",width=15,height=3,text="Logout",fg="black",bd=3)
+        new3_nav = Button(post_job_menu_bar,background="lavender",width=15,height=3,text="Logout",fg="black",bd=3,command=lambda:[post_job_frame.destroy(),post_job_menu_bar.destroy(),logout()])
         new3_nav.place(x=10,y=330)
 
     home_pg.mainloop()
@@ -437,20 +440,53 @@ def view_jobs():
     search_frame.pack(fill=X)
 
     names,ids = user.get_job_posters()
+    areas = get_areas_array()
+    payment_options = ["less than 900","900-2100","greater than 2100"]
+    duration_options = ["less than 6 hours","6-10 hours","more than 10 hours"]
 
-    category_search = AutocompleteCombobox(search_frame,completevalues=["Electrictian","Delivery Person","Laundry Services"])
+    category_search = AutocompleteCombobox(search_frame,completevalues=["Electrictian","Delivery Person","Laundry Services"],width=12)
     category_search.pack(side=LEFT,padx=10)
-    posted_by_search = AutocompleteCombobox(search_frame,completevalues=names)
-    posted_by_search.pack(side=LEFT,padx=10)
+    category_search.set("Category")
+    location_search = AutocompleteCombobox(search_frame,completevalues=areas,width=12)
+    location_search.pack(side=LEFT,padx=10)
+    location_search.set("Location")
+    payment_rate_search = AutocompleteCombobox(search_frame,completevalues=payment_options,width=12)
+    payment_rate_search.pack(side=LEFT,padx=10)
+    payment_rate_search.set("Amount")
+    duration_search = AutocompleteCombobox(search_frame,completevalues=duration_options,width=12)
+    duration_search.pack(side=LEFT,padx=10)
+    duration_search.set("Job duration")
     search_button = Button(search_frame,text="Search",command=lambda:[search_jobs(),create_cards_function()])
     search_button.pack(side=LEFT,padx=10)
 
     def search_jobs():
-        selected_index = posted_by_search.current()
-        if selected_index >= 0:
-            searched_jobs = job.search_jobs(ids[selected_index],category_search.get())
+        payment_index =  payment_rate_search.current()
+        duration_index = duration_search.current()
+        if payment_index == 0:
+            payment_1 = 0
+            payment_2 = 899
+        elif payment_index == 1:
+            payment_1 = 900
+            payment_2 = 2099
+        elif payment_index == 2:
+            payment_1 = 2100
+            payment_2 = 210000
         else:
-            searched_jobs = job.get_jobs_posted()
+            payment_1 = None
+            payment_2 = None
+        if duration_index ==0:
+            duration_1 = 1
+            duration_2 = 10
+        elif duration_index ==1:
+            duration_1 = 11
+            duration_2 = 20
+        elif duration_index ==2:
+            duration_1 = 21
+            duration_2 = 100
+        else:
+            duration_1 = None
+            duration_2 = None
+        searched_jobs = job.search_jobs(category_search.get(),duration_1,duration_2,payment_1,payment_2,location_search.get())
         return searched_jobs
 
     applications = job.get_application(session["session_id"])
@@ -464,36 +500,60 @@ def view_jobs():
             button.config(text="Apply")
             job.remove_application(session["session_id"],job_id)
 
-    def create_card(parent, card_label, description, id):
-        job_card = Frame(parent,bg="gray",bd=2,relief="solid")
+    def create_card(parent, card_label, description, id, amount, date):
+        job_card = Frame(parent,bg="white",bd=2,relief="solid",borderwidth=10)
         job_card.pack(fill=X,padx=10,pady=20)
-        job_label = Label(job_card,background="grey",text=card_label,font=("Arial",'15'))
-        job_label.pack(side=TOP)
-        job_description_label = Label(job_card,background="grey",text=description,width=50,height=2,font=("Arial",'10'))
-        job_description_label.pack(side=TOP)
+        job_label = Label(job_card,background="white",text=card_label,font=("Arial",'15', "bold"))
+        job_label.pack(side=TOP,anchor=W)
+        job_description_label = Label(job_card,background="white",text=description,width=50,height=2,font=("Arial",'12', "italic"),justify=LEFT)
+        job_description_label.pack(anchor=W)
+        posted_on_label = Label(job_card,background="white",text="Posted on " + str(date),width=50,height=2,font=("Arial",'12', "italic"),justify=LEFT,fg="black")
+        posted_on_label.pack(anchor=W)
+        job_amount_label = Label(job_card,background="white",text="Amount: Kshs." + str(amount),width=50,height=2,font=("Arial",'12', "italic"),justify=LEFT,fg="green")
+        job_amount_label.pack(anchor=W)
         button_text = StringVar(job_card)
         if ([id] in applications) is True:
             button_text = "Withdraw Application"
         else:
             button_text = "Apply"
-        job_application_button = Button(job_card,text=button_text,command=lambda:[apply_job(job_application_button,id)])
+        job_application_button = Button(job_card,bg="blue",fg="white",text=button_text,command=lambda:[apply_job(job_application_button,id)])
         job_application_button.pack(side=RIGHT,padx=10,pady=20)
-        view_button = Button(job_card,text="View Job",command=lambda:[view_jobs_frame.destroy(),view_jobs_menu_bar.destroy(),job_details_page(id)])
+        view_button = Button(job_card,text="View Job",bg="blue",fg="white",command=lambda:[view_jobs_frame.destroy(),view_jobs_menu_bar.destroy(),job_details_page(id)])
         view_button.pack(side=RIGHT,padx=10,pady=20)
 
         return job_card
 
     cards = []
+    jobs = job.get_category_jobs(session["category"])
+    if len(jobs) == 0:
+        none_label = Label(inner_frame,background="grey",text="No Jobs Found",font=("Arial",'15'))
+        none_label.pack()
+    for a_job in jobs:
+        job_amount = int(a_job["job_duration"])*int(a_job["total_amount"])
+        date_str = str(a_job["date_posted"])
+        date_format = "%Y-%m-%d %H:%M:%S.%f"
+        new_date = datetime.strptime(date_str, date_format)
+        formatted_date = new_date.strftime("%B %d, %Y %I:%M %p")
+        card = create_card(inner_frame,a_job["job_category"],a_job["job_description"],a_job["job_id"],job_amount,formatted_date)
+        cards.append(card)
 
     def create_cards_function():
         for widg in inner_frame.winfo_children():
             if widg != search_frame:
                 widg.destroy()
         jobs = search_jobs()
-
-        for a_job in jobs:
-            card = create_card(inner_frame,a_job["job_category"],a_job["job_description"],a_job["job_id"])
-            cards.append(card)
+        if len(jobs) == 0:
+            none_label = Label(inner_frame,background="grey",text="No Jobs Found",font=("Arial",'15'))
+            none_label.pack()
+        else:
+            for a_job in jobs:
+                job_amount = int(a_job["job_duration"])*int(a_job["total_amount"])
+                date_str = str(a_job["date_posted"])
+                date_format = "%Y-%m-%d %H:%M:%S.%f"
+                new_date = datetime.strptime(date_str, date_format)
+                formatted_date = new_date.strftime("%B %d, %Y %I:%M %p")
+                card = create_card(inner_frame,a_job["job_category"],a_job["job_description"],a_job["job_id"],job_amount,formatted_date)
+                cards.append(card)
 
         form_frame.update_idletasks()
         form_frame.configure(scrollregion=form_frame.bbox('all'))
@@ -514,7 +574,7 @@ def view_jobs():
         new1_nav.place(x=10,y=170)
         new2_nav = Button(view_jobs_menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3)
         new2_nav.place(x=10,y=250)
-        new3_nav = Button(view_jobs_menu_bar,background="lavender",width=15,height=3,text="Logout",fg="black",bd=3)
+        new3_nav = Button(view_jobs_menu_bar,background="lavender",width=15,height=3,text="Logout",fg="black",bd=3,command=lambda:[view_jobs_frame.destroy(),view_jobs_menu_bar.destroy(),logout()])
         new3_nav.place(x=10,y=330)
 
     home_pg.mainloop()
@@ -547,7 +607,7 @@ def job_posters_jobs_view():
         applicant_scrollbar.pack(side="right",fill='y')
 
         def create_applicant_cards(card_label, date_applied, applicant_id,application_status):
-            applicant_card = Frame(display_applicants_window,bg="gray",bd=2,relief="solid")
+            applicant_card = Frame(display_applicants_window,bg="white",bd=2,relief="solid")
             applicant_card.pack(fill=X,padx=10,pady=20)
             applicant_name_label = Label(applicant_card,text="Applicant Name: " + card_label,background="grey",fg="black",font=("Arial","13"))
             applicant_name_label.pack(side=TOP)
@@ -602,17 +662,17 @@ def job_posters_jobs_view():
     jobs = job.get_user_jobs(session["session_id"])
 
     def create_card(parent, card_label, description, id):
-        job_card = Frame(parent,bg="gray",bd=2,relief="solid")
+        job_card = Frame(parent,bg="white",bd=2,relief="solid")
         job_card.pack(fill=X,padx=10,pady=20)
-        job_label = Label(job_card,background="grey",text=card_label,font=("Arial",'15'))
-        job_label.pack(side=TOP)
-        job_description_label = Label(job_card,background="grey",text=description,width=50,height=2,font=("Arial",'10'))
-        job_description_label.pack(side=TOP)
-        job_application_button = Button(job_card,text="View Applicants",command=lambda:[display_applicants(id)])
+        job_label = Label(job_card,background="white",text=card_label,font=("Arial",'15'))
+        job_label.pack(side=TOP,anchor=W)
+        job_description_label = Label(job_card,background="white",text=description,width=50,height=2,font=("Arial",'10'))
+        job_description_label.pack(side=TOP,anchor=W)
+        job_application_button = Button(job_card,text="View Applicants",bg="blue",fg="white",command=lambda:[display_applicants(id)])
         job_application_button.pack(side=RIGHT,padx=10,pady=20)
-        view_button = Button(job_card,text="View Job",command=lambda:[view_jobs_frame.destroy(),view_jobs_menu_bar.destroy(),job_details_page(id)])
+        view_button = Button(job_card,text="View Job",bg="blue",fg="white",command=lambda:[view_jobs_frame.destroy(),view_jobs_menu_bar.destroy(),job_details_page(id)])
         view_button.pack(side=RIGHT,padx=10,pady=20)
-        job_done_button = Button(job_card,text="Job Completed",command=lambda:[job.mark_done_job(id),view_jobs_frame.destroy(),view_jobs_menu_bar.destroy(),job_rating(),job_details_page(id)])
+        job_done_button = Button(job_card,text="Job Completed",bg="blue",fg="white",command=lambda:[job.mark_done_job(id),view_jobs_frame.destroy(),view_jobs_menu_bar.destroy(),job_rating(),job_details_page(id)])
         job_done_button.pack(side=RIGHT,padx=10,pady=20)
 
         return job_card
@@ -639,7 +699,7 @@ def job_posters_jobs_view():
         new1_nav.place(x=10,y=170)
         new2_nav = Button(view_jobs_menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3)
         new2_nav.place(x=10,y=250)
-        new3_nav = Button(view_jobs_menu_bar,background="lavender",width=15,height=3,text="Logout",fg="black",bd=3)
+        new3_nav = Button(view_jobs_menu_bar,background="lavender",width=15,height=3,text="Logout",fg="black",bd=3,command=lambda:[view_jobs_frame.destroy(),view_jobs_menu_bar.destroy(),logout()])
         new3_nav.place(x=10,y=330)
 
     home_pg.mainloop()
@@ -709,7 +769,7 @@ def job_details_page(job_id):
         new1_nav.place(x=10,y=170)
         new2_nav = Button(job_details_menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3)
         new2_nav.place(x=10,y=250)
-        new3_nav = Button(job_details_menu_bar,background="lavender",width=15,height=3,text="Logout",fg="black",bd=3)
+        new3_nav = Button(job_details_menu_bar,background="lavender",width=15,height=3,text="Logout",fg="black",bd=3,command=lambda:[job_details_frame.destroy(),job_details_menu_bar.destroy(),logout()])
         new3_nav.place(x=10,y=330)
 
     home_pg.mainloop()
@@ -737,12 +797,18 @@ def profile_pg(user_id):
     login_nav = Button(profile_page_menu_bar,background="lavender",width=15,height=3,text="Login",fg="black",bd=3,command=lambda: [profile_page_frame.destroy(),profile_page_menu_bar.destroy(),login_page()])
     login_nav.place(x=10,y=90)
     if session["logged_in"] is True:
-        new1_nav = Button(profile_page_menu_bar,background="lavender",width=15,height=3,text="Post Job",fg="black",bd=3)
-        new1_nav.place(x=10,y=170)
-        new2_nav = Button(profile_page_menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3)
-        new2_nav.place(x=10,y=250)
-        new3_nav = Button(profile_page_menu_bar,background="lavender",width=15,height=3,text="Logout",fg="black",bd=3)
-        new3_nav.place(x=10,y=330)
+        if session["user_type"] is "job_poster":
+            new1_nav = Button(profile_page_menu_bar,background="lavender",width=15,height=3,text="Post Job",fg="black",bd=3)
+            new1_nav.place(x=10,y=170)
+            new2_nav = Button(profile_page_menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3)
+            new2_nav.place(x=10,y=250)
+            new3_nav = Button(profile_page_menu_bar,background="lavender",width=15,height=3,text="Logout",fg="black",bd=3,command=lambda:[profile_page_frame.destroy(),profile_page_menu_bar.destroy(),logout()])
+            new3_nav.place(x=10,y=330)
+        elif session["user_type"] is "job_seeker":
+            new1_nav = Button(profile_page_menu_bar,background="lavender",width=15,height=3,text="View Jobs",fg="black",bd=3)
+            new1_nav.place(x=10,y=170)
+            new3_nav = Button(profile_page_menu_bar,background="lavender",width=15,height=3,text="Logout",fg="black",bd=3,command=lambda:[profile_page_frame.destroy(),profile_page_menu_bar.destroy(),logout()])
+            new3_nav.place(x=10,y=250)
 
     home_pg.mainloop()
 
@@ -779,7 +845,7 @@ def set_profile(user_id):
         new1_nav.place(x=10,y=170)
         new2_nav = Button(set_profile_menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3)
         new2_nav.place(x=10,y=250)
-        new3_nav = Button(set_profile_menu_bar,background="lavender",width=15,height=3,text="Logout",fg="black",bd=3)
+        new3_nav = Button(set_profile_menu_bar,background="lavender",width=15,height=3,text="Logout",fg="black",bd=3,command=lambda:[set_profile_frame.destroy(),set_profile_menu_bar.destroy(),logout()])
         new3_nav.place(x=10,y=330)
 
     home_pg.mainloop()
