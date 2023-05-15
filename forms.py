@@ -449,7 +449,7 @@ def post_job_form():
 
     description_label = Label(form_frame,text="Job Description ",background="grey",fg="whitesmoke",font=("Arial",12))
     description_label.place(x=0,y=70)
-    description_entry = Text(form_frame,width=25,height=5)
+    description_entry = Text(form_frame,width=60,height=5)
     description_entry.place(x=150,y=70)
 
     job_duration_label = Label(form_frame,text="Job length/duration",background="grey",fg="whitesmoke",font=("Arial",12))
@@ -460,7 +460,7 @@ def post_job_form():
     Radiobutton(form_frame,text="Medium (5-12 hours)",value="M",background="grey",variable=job_duration_var).place(x=160,y=190)
     Radiobutton(form_frame,text="Large  (More than one working day)",value="L",background="grey",variable=job_duration_var).place(x=160,y=210)
     
-    amount_label = Label(form_frame,text="Amount",background="grey",fg="whitesmoke",font=("Arial",12))
+    amount_label = Label(form_frame,text="Amount/hr",background="grey",fg="whitesmoke",font=("Arial",12))
     amount_label.place(x=0,y=240)
     amount_entry = Entry(form_frame,width=10)
     amount_entry.place(x=160,y=240)
@@ -518,7 +518,7 @@ def view_jobs():
 
     names,ids = user.get_job_posters()
 
-    category_search = AutocompleteCombobox(search_frame,completevalues=["A","B","C"])
+    category_search = AutocompleteCombobox(search_frame,completevalues=["Electrictian","Delivery Person","Laundry Services"])
     category_search.pack(side=LEFT,padx=10)
     posted_by_search = AutocompleteCombobox(search_frame,completevalues=names)
     posted_by_search.pack(side=LEFT,padx=10)
@@ -760,9 +760,12 @@ def job_details_page(job_id):
     posted_by_label = Label(form_frame,text=f"Posted by:\t" + posted_user,background="grey",fg="whitesmoke",font=("Arial",15))
     posted_by_label.place(x=20,y=200)
 
-    done_by_user = user.get_job_seeker(spec_job["done_by"])
-    posted_by_label = Label(form_frame,text=f"Done by:\t\t" + done_by_user,background="grey",fg="whitesmoke",font=("Arial",15))
-    posted_by_label.place(x=20,y=250)
+    if spec_job["done_by"]  is not None:
+        done_by_user = user.get_job_seeker(spec_job["done_by"])
+    else:
+        done_by_user = "No one selected yet"
+    done_by_label = Label(form_frame,text=f"Done by:\t\t" + done_by_user,background="grey",fg="whitesmoke",font=("Arial",15))
+    done_by_label.place(x=20,y=250)
 
     if spec_job["job_duration"] is 'L':
         job_duration = "Large(More than one working day)"
@@ -826,9 +829,9 @@ def profile_pg(user_id):
 def set_profile(user_id):
     session["user_type"] = "job_seeker"
     if session["user_type"] is "job_seeker":
-        profile,user_name = user.get_job_seeker(user_id)
+        user_name = user.get_job_seeker(user_id)
     elif session["user_type"] is "job_poster":
-        profile,user_name = user.get_job_poster(user_id)
+        user_name = user.get_job_poster(user_id)
 
     home_pg.title(f"{user_name}'s Profile")
 
@@ -840,6 +843,12 @@ def set_profile(user_id):
 
     form_frame = Frame(set_profile_frame,bg="gray",borderwidth=10,height=1280)
     form_frame.pack(expand=True,fill=BOTH,padx=20,pady=20)
+
+    img =Image.open("profile_pics/anonymous.png")
+    img = img.resize((100, 100))
+    tk_img = ImageTk.PhotoImage(img)
+    img_label = Label(form_frame, image=tk_img)
+    img_label.pack(anchor=NW)
 
     home_nav = Button(set_profile_menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=5,command=lambda:[set_profile_frame.destroy(),set_profile_menu_bar.destroy(),home()])
     home_nav.place(x=10,y=10)
