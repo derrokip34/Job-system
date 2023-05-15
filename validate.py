@@ -1,4 +1,5 @@
 import bcrypt
+from datetime import datetime
 
 def hash_password(password):
     salt = b'$2b$12$SJv9T2zvJFjI6bYtibhZv.'
@@ -8,5 +9,6 @@ def hash_password(password):
     return hashed_password
 
 def get_date_of_birth(day,month,year):
-    date_of_birth = month + "/" + day + "/" + year
+    date_str = month + "/" + day + "/" + year
+    date_of_birth = datetime.strptime(date_str, '%m/%d/%Y').date()
     return date_of_birth
