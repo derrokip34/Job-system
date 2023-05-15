@@ -657,7 +657,35 @@ def job_posters_jobs_view():
         display_applicants_window.mainloop()
 
     def job_rating():
-        print("Job done")
+        rating_window = Tk()
+        rating_window.geometry("400x400")
+        rating_window.title("Job Rating")
+
+        rating_var = IntVar()
+
+        rating_label = Label(rating_window, text="Rate our service (1-5 stars):")
+        rating_label.pack(pady=(20, 5))
+
+        rating_scale = Scale(rating_window,from_=1,to=5,orient=HORIZONTAL,variable=rating_var)
+        rating_scale.pack()
+
+        comment_label = Label(rating_window,text="Add a coment/review(optional):")
+        comment_label.pack(pady=(20, 5))
+
+        comment_entry = Text(rating_window,height=10,width=30)
+        comment_entry.pack()
+
+        def submit_rating():
+            rating = rating_var.get()
+            print(rating)
+
+        submit_button = Button(rating_window, text="Submit Rating", command=submit_rating)
+        submit_button.pack(pady=20)
+
+        rating_window.mainloop()
+        view_jobs_frame.destroy()
+        view_jobs_menu_bar.destroy()
+        job_posters_jobs_view()
 
     jobs = job.get_user_jobs(session["session_id"])
 
@@ -672,7 +700,7 @@ def job_posters_jobs_view():
         job_application_button.pack(side=RIGHT,padx=10,pady=20)
         view_button = Button(job_card,text="View Job",bg="blue",fg="white",command=lambda:[view_jobs_frame.destroy(),view_jobs_menu_bar.destroy(),job_details_page(id)])
         view_button.pack(side=RIGHT,padx=10,pady=20)
-        job_done_button = Button(job_card,text="Job Completed",bg="blue",fg="white",command=lambda:[job.mark_done_job(id),view_jobs_frame.destroy(),view_jobs_menu_bar.destroy(),job_rating(),job_details_page(id)])
+        job_done_button = Button(job_card,text="Job Completed",bg="blue",fg="white",command=lambda:[job.mark_done_job(id),job_rating()])
         job_done_button.pack(side=RIGHT,padx=10,pady=20)
 
         return job_card
