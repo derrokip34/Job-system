@@ -119,6 +119,10 @@ class Job:
         jobs = search_jobs(job_category,dur1,dur2,pay1,pay2,location)
         return jobs
     
+    def get_category_jobs(self,category):
+        jobs = get_jobs_by_category(category)
+        return jobs
+    
 def get_areas_array():
     areas = get_areas()
     areas_array = []

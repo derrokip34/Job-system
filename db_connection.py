@@ -337,3 +337,16 @@ def job_done(job_id):
     conn.commit()
     cur.close()
     conn.close()
+
+def get_jobs_by_category(category):
+    conn = psycopg2.connect(database=db_name,user=db_user,host=db_host,port=db_port,password=db_password)
+    cur = conn.cursor(cursor_factory=DictCursor)
+
+    query = "SELECT * FROM jobs WHERE job_category=%s;"
+    cur.execute(query,(category,))
+    jobs = cur.fetchall()
+    
+    conn.commit()
+    cur.close()
+    conn.close()
+    return jobs
