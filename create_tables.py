@@ -53,7 +53,7 @@ query = """
             done_by INT,
             job_duration INT,
             total_amount INT,
-            done_on DATE,
+            done_on TIMESTAMP,
             job_status VARCHAR(10),
             rating INT,
             job_location VARCHAR(30),

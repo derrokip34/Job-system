@@ -165,7 +165,7 @@ def add_job_to_db(session_id,job_data):
     query = "SELECT id FROM job_posters WHERE session_id=%s;"
     cur.execute(query,(session_id,))
     posted_by = cur.fetchone()
-    add_job_query = "INSERT INTO jobs(job_category,job_description,date_posted,posted_by,job_duration,total_amount,job_status,job_location) VALUES(%s,%s,%s,%s,%s,%s,%s);"
+    add_job_query = "INSERT INTO jobs(job_category,job_description,posted_by,job_duration,total_amount,job_status,job_location) VALUES(%s,%s,%s,%s,%s,%s,%s);"
     cur.execute(add_job_query,(job_data["job_category"],job_data["job_description"],posted_by[0],job_data["job_duration"],int(job_data["total_amount"]),job_status,job_data["job_location"],))
 
     conn.commit()
