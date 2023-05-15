@@ -81,6 +81,10 @@ query = """
             category_id SERIAL PRIMARY KEY,
             category VARCHAR(40)
         );
+        CREATE TABLE areas(
+            area_id SERIAL PRIMARY KEY,
+            area VARCHAR(40)
+        );
         """
 
 cur.execute(query)
