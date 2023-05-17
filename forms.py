@@ -418,6 +418,106 @@ def post_job_form():
 
     home_pg.mainloop()
 
+def update_job_form(job_id):
+    home_pg.title("Update Job Details")
+
+    update_job = job.get_specified_job(job_id)
+
+    update_job_menu_bar = Frame(home_pg,bg="dimgrey",width=150,height=1280)
+    update_job_menu_bar.pack(side=LEFT)
+
+    update_job_frame = Frame(home_pg,bg="wheat",borderwidth=10,width=550,height=1280)
+    update_job_frame.pack(expand=True,fill=BOTH)
+
+    form_frame = Frame(update_job_frame,bg="gray",borderwidth=10,height=1280)
+    form_frame.pack(expand=True,fill=BOTH,padx=20,pady=20)
+
+    category_label = Label(form_frame,text="Job Category ",background="grey",fg="whitesmoke",font=("Arial",12))
+    category_label.place(x=0,y=30)
+    var3 = StringVar(form_frame)
+    var3.set("Delivery")
+    categories = ["Delivery Person","Electrictian","Laundry Services"]
+    category_entry = AutocompleteCombobox(form_frame,completevalues=categories)
+    category_entry.set(update_job["job_category"])
+    category_entry.place(x=150,y=30)
+
+    description_label = Label(form_frame,text="Job Description ",background="grey",fg="whitesmoke",font=("Arial",12))
+    description_label.place(x=0,y=70)
+    description_entry = Text(form_frame,width=60,height=7)
+    description_entry.insert('1.0',update_job["job_description"])
+    description_entry.place(x=150,y=70)
+
+
+    duration_label = Label(form_frame,text="Job Duration(in hours)",background="grey",fg="whitesmoke",font=("Arial",12))
+    duration_label.place(x=0,y=200)
+    value_label = Label(form_frame, text=int(update_job["job_duration"]), background="white",width=3)
+    value_label.place(x=200, y=200)
+    MAX_VALUE = 8
+    MIN_VALUE = 1
+    def increment():
+        current_value = int(value_label['text'])
+        if current_value < MAX_VALUE:
+            new_value = current_value + 1
+            value_label['text'] = str(new_value)
+    def decrement():
+        current_value = int(value_label['text'])
+        if current_value > MIN_VALUE:
+            new_value = current_value - 1
+            value_label['text'] = str(new_value)
+    def get_value():
+        return int(value_label["text"])
+    increment_button = Button(form_frame, text="+", height=1,command=increment)
+    increment_button.place(x=260, y=200)
+    decrement_button = Button(form_frame, text="-", height=1, command=decrement)
+    decrement_button.place(x=160, y=200)
+    
+    amount_var = StringVar()
+    amount_var.set(update_job["total_amount"])
+    amount_label = Label(form_frame,text="Amount",background="grey",fg="whitesmoke",font=("Arial",12))
+    amount_label.place(x=0,y=240)
+    amount_entry = Entry(form_frame,width=10,textvariable=amount_var)
+    amount_entry.place(x=160,y=240)
+    p_hr_label = Label(form_frame,text="/hr",background="grey",fg="whitesmoke",font=("Arial",12))
+    p_hr_label.place(x=220,y=240)
+
+    job_location_label =Label(form_frame,text="Amount",background="grey",fg="whitesmoke",font=("Arial",12))
+    job_location_label.place(x=0,y=280)
+    areas = ["Balozi Road","Chuna"]
+    area_entry = AutocompleteCombobox(form_frame,completevalues=areas)
+    area_entry.set(update_job["job_location"])
+    area_entry.place(x=160,y=280)
+
+    def update_job_data():
+        input_job_category = category_entry.get()
+        input_job_description = description_entry.get("1.0","end-1c")
+        input_job_duration = get_value()
+        input_job_rate = amount_entry.get()
+        input_job_location = area_entry.get()
+
+        job.update_job(job_id,input_job_category,input_job_description,input_job_duration,input_job_rate,input_job_location)
+
+        messagebox.showinfo("Job Details Updated","Job Details Updated Succesfully")
+        update_job_frame.destroy()
+        update_job_menu_bar.destroy()
+        job_posters_jobs_view()
+
+    update_job_button = Button(form_frame,background="lavender",width=15,text="Update Job",command=lambda: [update_job_data()])
+    update_job_button.place(x=240,y=340)
+
+    home_nav = Button(update_job_menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3,command=lambda:[update_job_frame.destroy(),update_job_menu_bar.destroy(),home()])
+    home_nav.place(x=10,y=10)
+    login_nav = Button(update_job_menu_bar,background="lavender",width=15,height=3,text="Login",fg="black",bd=3,command=lambda: [update_job_frame.destroy(),update_job_menu_bar.destroy(),login_page()])
+    login_nav.place(x=10,y=90)
+    if session["logged_in"] is True:
+        new1_nav = Button(update_job_menu_bar,background="lavender",width=15,height=3,text="Post Job",fg="black",bd=3 )
+        new1_nav.place(x=10,y=170)
+        new2_nav = Button(update_job_menu_bar,background="lavender",width=15,height=3,text="View Jobs",fg="black",bd=3)
+        new2_nav.place(x=10,y=250)
+        new3_nav = Button(update_job_menu_bar,background="lavender",width=15,height=3,text="Logout",fg="black",bd=3,command=lambda:[update_job_frame.destroy(),update_job_menu_bar.destroy(),logout()])
+        new3_nav.place(x=10,y=330)
+
+    home_pg.mainloop()
+
 def view_jobs():
     home_pg.title("Jobs Posted")
 
@@ -696,10 +796,12 @@ def job_posters_jobs_view():
         job_label.pack(side=TOP,anchor=W)
         job_description_label = Label(job_card,background="white",text=description,width=50,height=2,font=("Arial",'10'))
         job_description_label.pack(side=TOP,anchor=W)
-        job_application_button = Button(job_card,text="View Applicants",bg="blue",fg="white",command=lambda:[display_applicants(id)])
-        job_application_button.pack(side=RIGHT,padx=10,pady=20)
+        job_applicants_button = Button(job_card,text="View Applicants",bg="blue",fg="white",command=lambda:[display_applicants(id)])
+        job_applicants_button.pack(side=RIGHT,padx=10,pady=20)
         view_button = Button(job_card,text="View Job",bg="blue",fg="white",command=lambda:[view_jobs_frame.destroy(),view_jobs_menu_bar.destroy(),job_details_page(id)])
         view_button.pack(side=RIGHT,padx=10,pady=20)
+        update_job_button = Button(job_card,text="Update Job",bg="blue",fg="white",command=lambda:[view_jobs_frame.destroy(),view_jobs_menu_bar.destroy(),update_job_form(id)])
+        update_job_button.pack(side=RIGHT,padx=10,pady=20)
         job_done_button = Button(job_card,text="Job Completed",bg="blue",fg="white",command=lambda:[job.mark_done_job(id),job_rating()])
         job_done_button.pack(side=RIGHT,padx=10,pady=20)
 
