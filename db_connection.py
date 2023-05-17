@@ -2,7 +2,7 @@
 #Date:   Mon Apr 10
 import psycopg2,bcrypt,uuid,os
 from psycopg2.extras import DictCursor
-from datetime import date
+from datetime import date,datetime
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -350,3 +350,20 @@ def get_jobs_by_category(category):
     cur.close()
     conn.close()
     return jobs
+
+def update_job_in_db(job_id,category,description,duration,amount,location):
+    conn = psycopg2.connect(database=db_name,user=db_user,host=db_host,port=db_port,password=db_password)
+    cur = conn.cursor()
+
+    time_updated = datetime.now()
+
+    query="""
+            UPDATE jobs
+            SET job_category=%s, job_description=%s, job_duration=%s, total_amount=%s, job_location=%s, updated_on=%s
+            WHERE job_id=%s;
+          """
+    cur.execute(query,(category,description,int(duration),int(amount),location,time_updated,job_id,))
+    
+    conn.commit()
+    cur.close()
+    conn.close()

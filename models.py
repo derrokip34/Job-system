@@ -80,6 +80,10 @@ class Job:
         }
         add_job_to_db(session_id,job_data)
 
+    def update_job(self,job_id,category,description,duration,amount,location):
+        update_job_in_db(job_id,category,description,duration,amount,location)
+
+
     def get_jobs_posted(self):
         all_jobs_posted = get_all_jobs()
         return all_jobs_posted
