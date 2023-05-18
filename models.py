@@ -39,6 +39,10 @@ class User:
         full_username = user["first_name"] + " " + user["last_name"]
         return full_username
     
+    def get_job_poster_dict(self,id):
+        user = get_job_poster_by_id(id)
+        return user
+    
     def get_job_seeker(self,id):
         user = get_job_seeker_by_id(id)
         if user is not None:
@@ -46,6 +50,10 @@ class User:
         else:
             full_username = "Not selected yet"
         return full_username
+    
+    def get_job_seeker_dict(self,id):
+        user = get_job_seeker_by_id(id)
+        return user
     
     def get_job_posters(self):
         job_posters = get_job_posters()
@@ -106,12 +114,16 @@ class Job:
         jobs = get_jobs_posted_by_user(session_id)
         return jobs
     
+    def get_user_jobs_by_status(self,session_id,status):
+        jobs = get_jobs_posted_by_user_and_status(session_id,status)
+        return jobs
+    
     def get_job_applications(self,job_id):
         applications = get_job_applications(job_id)
         return applications
     
-    def select_job_applicant(self,application_id):
-        select_applicant(application_id)
+    def select_job_applicant(self,application_id,job):
+        select_applicant(application_id,job)
 
     def unselect_job_applicant(self,application_id):
         reverse_applicant(application_id)
@@ -126,6 +138,9 @@ class Job:
     def get_category_jobs(self,category):
         jobs = get_jobs_by_category(category)
         return jobs
+
+    def post_job_rating(self,job,rating_value,comment):
+        add_job_rating(job,rating_value,comment)
     
 def get_areas_array():
     areas = get_areas()

@@ -8,10 +8,11 @@ from PIL import Image,ImageTk
 
 session = {
     "username": None,
+    "user_id" : None,
     "session_id": None,
     "user_type": None,
     "logged_in": False,
-    "category": None
+    "category": None,
 }
 user = User()
 job =Job()
@@ -28,6 +29,7 @@ def logout():
     session["user_type"] = None
     session["username"] = None
     session["category"] = None
+    session["user_id"] = None
     messagebox.showinfo("Log Out","User Logged out")
     home()
 
@@ -106,6 +108,7 @@ def login_page():
         login_user,user_type = user.login(input_email,input_password)
         if login_user is not None:
             session["username"] = login_user["email"]
+            session["user_id"] = login_user["id"]
             session["logged_in"] = True
             if user_type is "job_seeker":
                 session["category"] = login_user["category"]
@@ -697,6 +700,15 @@ def job_posters_jobs_view():
     inner_frame = Frame(form_frame,bg="gray")
     form_frame.create_window((10, 0), window=inner_frame, anchor="center")
 
+    select_jobs_frame = Frame(inner_frame,bg="gray")
+    select_jobs_frame.pack(fill=X,side=TOP)
+
+    jobs_done_button = Button(select_jobs_frame,text="Jobs Completed",bg="grey",fg="black",command=lambda:[create_cards_funtion("true")])
+    jobs_done_button.pack(side=LEFT,padx=10)
+
+    jobs_not_done_button = Button(select_jobs_frame,text="Jobs Not Completed",bg="grey",fg="black",command=lambda:[create_cards_funtion("false")])
+    jobs_not_done_button.pack(side=LEFT,padx=10)
+
     def display_applicants(job_id):
         display_applicants_window = Tk()
         display_applicants_window.geometry('400x400')
@@ -706,14 +718,14 @@ def job_posters_jobs_view():
         applicant_scrollbar = Scrollbar(display_applicants_window,command=applicants_frame.yview)
         applicant_scrollbar.pack(side="right",fill='y')
 
-        def create_applicant_cards(card_label, date_applied, applicant_id,application_status):
+        def create_applicant_cards(card_label, date_applied, applicant_id,application_status, job):
             applicant_card = Frame(display_applicants_window,bg="white",bd=2,relief="solid")
             applicant_card.pack(fill=X,padx=10,pady=20)
             applicant_name_label = Label(applicant_card,text="Applicant Name: " + card_label,background="grey",fg="black",font=("Arial","13"))
             applicant_name_label.pack(side=TOP)
             date_applied_label = Label(applicant_card,text=f"Applied on: {date_applied}",background="grey",fg="black",font=("Arial","13"))
             date_applied_label.pack(side=TOP)
-            view_profile_button = Button(applicant_card,text="View User profile",command=lambda:[job.select_job_applicant(applicant_id)])
+            view_profile_button = Button(applicant_card,text="View User profile",command=lambda:[])
             view_profile_button.pack(side=RIGHT,padx=10,pady=20)
 
             if application_status == "ND":
@@ -721,15 +733,15 @@ def job_posters_jobs_view():
             elif application_status == "S":
                 button_text = "Remove Applicant"
 
-            select_applicant_button = Button(applicant_card,text=button_text,command=lambda:[select_unselect_applicant(select_applicant_button,applicant_id)])
+            select_applicant_button = Button(applicant_card,text=button_text,command=lambda:[select_unselect_applicant(select_applicant_button,applicant_id,job)])
             select_applicant_button.pack(side=RIGHT,padx=10,pady=20)
 
             return applicant_card
         
-        def select_unselect_applicant(button,applicant_id):
+        def select_unselect_applicant(button,applicant_id,job_id):
             if button.cget("text") == "Select Applicant":
                 button.config(text="Remove Applicant")
-                job.select_job_applicant(applicant_id)
+                job.select_job_applicant(applicant_id,job_id)
             else:
                 button.config(text="Remove Applicant")
                 button.config(text="Select Applicant")
@@ -744,7 +756,7 @@ def job_posters_jobs_view():
             applicant_cards=[]
             for application in job_applications:
                 applicant = user.get_job_seeker(application["applicant"])
-                applicant_card = create_applicant_cards(applicant,application["application_date"],application["application_id"],application["application_status"])
+                applicant_card = create_applicant_cards(applicant,application["application_date"],application["application_id"],application["application_status"],application["job"])
                 applicant_cards.append(applicant_card)
 
         applicants_frame.update_idletasks()
@@ -756,12 +768,12 @@ def job_posters_jobs_view():
 
         display_applicants_window.mainloop()
 
-    def job_rating():
+    def job_rating(job_id):
         rating_window = Tk()
         rating_window.geometry("400x400")
         rating_window.title("Job Rating")
 
-        rating_var = IntVar()
+        rating_var = IntVar(rating_window)
 
         rating_label = Label(rating_window, text="Rate our service (1-5 stars):")
         rating_label.pack(pady=(20, 5))
@@ -777,41 +789,70 @@ def job_posters_jobs_view():
 
         def submit_rating():
             rating = rating_var.get()
-            print(rating)
+            comment = comment_entry.get('1.0','end')
+            job.post_job_rating(job_id,int(rating),comment)
+            rating_window.destroy()
+            view_jobs_frame.destroy()
+            view_jobs_menu_bar.destroy()
+            job_posters_jobs_view()
 
         submit_button = Button(rating_window, text="Submit Rating", command=submit_rating)
         submit_button.pack(pady=20)
 
         rating_window.mainloop()
-        view_jobs_frame.destroy()
-        view_jobs_menu_bar.destroy()
-        job_posters_jobs_view()
 
     jobs = job.get_user_jobs(session["session_id"])
 
-    def create_card(parent, card_label, description, id):
+    def create_card(parent, card_label, description, id, done_by, status):
         job_card = Frame(parent,bg="white",bd=2,relief="solid")
         job_card.pack(fill=X,padx=10,pady=20)
         job_label = Label(job_card,background="white",text=card_label,font=("Arial",'15'))
-        job_label.pack(side=TOP,anchor=W)
+        job_label.pack(side=TOP,anchor=NW)
         job_description_label = Label(job_card,background="white",text=description,width=50,height=2,font=("Arial",'10'))
-        job_description_label.pack(side=TOP,anchor=W)
-        job_applicants_button = Button(job_card,text="View Applicants",bg="blue",fg="white",command=lambda:[display_applicants(id)])
-        job_applicants_button.pack(side=RIGHT,padx=10,pady=20)
+        job_description_label.pack(side=TOP,anchor=NW)
+        if status == "true":
+            job_status_label = Label(job_card,background="white",text="Job Completed",width=50,height=2,font=("Arial",'10'))
+            job_status_label.pack(side=TOP,anchor=NW)
+        else:
+            job_applicants_button = Button(job_card,text="View Applicants",bg="blue",fg="white",command=lambda:[display_applicants(id)])
+            job_applicants_button.pack(side=RIGHT,padx=10,pady=20)
         view_button = Button(job_card,text="View Job",bg="blue",fg="white",command=lambda:[view_jobs_frame.destroy(),view_jobs_menu_bar.destroy(),job_details_page(id)])
         view_button.pack(side=RIGHT,padx=10,pady=20)
         update_job_button = Button(job_card,text="Update Job",bg="blue",fg="white",command=lambda:[view_jobs_frame.destroy(),view_jobs_menu_bar.destroy(),update_job_form(id)])
         update_job_button.pack(side=RIGHT,padx=10,pady=20)
-        job_done_button = Button(job_card,text="Job Completed",bg="blue",fg="white",command=lambda:[job.mark_done_job(id),job_rating()])
-        job_done_button.pack(side=RIGHT,padx=10,pady=20)
+        if done_by is not None:
+            job_done_button = Button(job_card,text="Job Completed",bg="blue",fg="white",command=lambda:[job.mark_done_job(id),job_rating(id)])
+            job_done_button.pack(side=RIGHT,padx=10,pady=20)
 
         return job_card
 
     cards = []
 
-    for a_job in jobs:
-        card = create_card(inner_frame,a_job["job_category"],a_job["job_description"],a_job["job_id"])
-        cards.append(card)
+    def create_cards_funtion(status):
+        for widget in inner_frame.winfo_children():
+            if widget != select_jobs_frame:
+                widget.destroy()
+        jobs = job.get_user_jobs_by_status(session["session_id"],status)
+        if len(jobs) == 0:
+            no_jobs_label = Label(inner_frame,text="No Jobs",bg="gray",fg="black",font=("Arial","15"),justify=CENTER)
+            no_jobs_label.pack()
+        else:
+            if status == "true":
+                for a_job in jobs:
+                    card = create_card(inner_frame,a_job["job_category"],a_job["job_description"],a_job["job_id"],a_job["done_by"],a_job["job_status"])
+                    cards.append(card)
+            elif status == "false":
+                for a_job in jobs:
+                    card = create_card(inner_frame,a_job["job_category"],a_job["job_description"],a_job["job_id"],a_job["done_by"],a_job["job_status"])
+                    cards.append(card)
+
+    if len(jobs) == 0:
+        no_jobs_label = Label(inner_frame,text="No Jobs",bg="gray",fg="black",font=("Arial","15"),justify=CENTER)
+        no_jobs_label.pack()
+    else:
+        for a_job in jobs:
+            card = create_card(inner_frame,a_job["job_category"],a_job["job_description"],a_job["job_id"],a_job["done_by"],a_job["job_status"])
+            cards.append(card)
 
     form_frame.update_idletasks()
     form_frame.configure(scrollregion=form_frame.bbox('all'))
@@ -905,13 +946,15 @@ def job_details_page(job_id):
     home_pg.mainloop()
 
 def profile_pg(user_id):
-    session["user_type"] = "job_seeker"
+    session["user_type"] = "job_poster"
     if session["user_type"] is "job_seeker":
-        profile,user_name = user.get_job_seeker(user_id)
+        users_profile = user.get_job_seeker_dict(user_id)
     elif session["user_type"] is "job_poster":
-        profile,user_name = user.get_job_poster(user_id)
+        users_profile = user.get_job_poster_dict(user_id)
 
-    home_pg.title(f"{user_name}'s Profile")
+    full_name = users_profile["first_name"] + " " + users_profile["last_name"]
+
+    home_pg.title(f"{full_name}'s Profile")
 
     profile_page_menu_bar = Frame(home_pg,bg="dimgrey",width=150,height=1280)
     profile_page_menu_bar.pack(side=LEFT)
@@ -921,6 +964,18 @@ def profile_pg(user_id):
 
     form_frame = Frame(profile_page_frame,bg="gray",borderwidth=10,height=1280)
     form_frame.pack(expand=True,fill=BOTH,padx=20,pady=20)
+
+    img =Image.open("profile_pics/anonymous.png")
+    img = img.resize((100, 100))
+    tk_img = ImageTk.PhotoImage(img)
+    img_label = Label(form_frame, image=tk_img)
+    img_label.pack(anchor=W)
+
+    #full_name_label = Label(form_frame, text="Full Name:")
+    #full_name_label.pack(side=TOP,anchor=NW)
+    #full_name = 
+    full_name_value = Label(form_frame, text="John Doe", background="grey")
+    full_name_value.pack(side=LEFT,anchor=NW,pady=20)
 
     home_nav = Button(profile_page_menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=5,command=lambda:[profile_page_frame.destroy(),profile_page_menu_bar.destroy(),home()])
     home_nav.place(x=10,y=10)
@@ -942,14 +997,14 @@ def profile_pg(user_id):
 
     home_pg.mainloop()
 
-def set_profile(user_id):
-    session["user_type"] = "job_seeker"
+def update_profile(user_id):
     if session["user_type"] is "job_seeker":
         user_name = user.get_job_seeker(user_id)
     elif session["user_type"] is "job_poster":
         user_name = user.get_job_poster(user_id)
 
     home_pg.title(f"{user_name}'s Profile")
+    session["user_type"] = "job_seeker"
 
     set_profile_menu_bar = Frame(home_pg,bg="dimgrey",width=150,height=1280)
     set_profile_menu_bar.pack(side=LEFT)
@@ -959,12 +1014,6 @@ def set_profile(user_id):
 
     form_frame = Frame(set_profile_frame,bg="gray",borderwidth=10,height=1280)
     form_frame.pack(expand=True,fill=BOTH,padx=20,pady=20)
-
-    img =Image.open("profile_pics/anonymous.png")
-    img = img.resize((100, 100))
-    tk_img = ImageTk.PhotoImage(img)
-    img_label = Label(form_frame, image=tk_img)
-    img_label.pack(anchor=NW)
 
     home_nav = Button(set_profile_menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=5,command=lambda:[set_profile_frame.destroy(),set_profile_menu_bar.destroy(),home()])
     home_nav.place(x=10,y=10)
@@ -980,4 +1029,4 @@ def set_profile(user_id):
 
     home_pg.mainloop()
 
-home()
+profile_pg(1)

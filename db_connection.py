@@ -200,6 +200,22 @@ def get_jobs_posted_by_user(session_id):
     conn.close()
     return jobs
 
+def get_jobs_posted_by_user_and_status(session_id,status):
+    conn = psycopg2.connect(database=db_name,user=db_user,host=db_host,port=db_port,password=db_password)
+    cur = conn.cursor(cursor_factory=DictCursor)
+    query1 = "SELECT id FROM job_posters WHERE session_id=%s"
+    cur.execute(query1,(session_id,))
+    user = cur.fetchone()
+
+    query = "SELECT * FROM jobs WHERE posted_by=%s AND job_status=%s;"
+    cur.execute(query,(user[0],status,))
+    jobs = cur.fetchall()
+    
+    conn.commit()
+    cur.close()
+    conn.close()
+    return jobs
+
 def search_jobs(category,duration1,duration2,payment1,payment2,location):
     conn = psycopg2.connect(database=db_name,user=db_user,host=db_host,port=db_port,password=db_password)
     cur = conn.cursor(cursor_factory=DictCursor)
@@ -296,15 +312,21 @@ def get_job(job_id):
     conn.close()
     return job
 
-def select_applicant(application_id):
+def select_applicant(application_id,job):
     conn = psycopg2.connect(database=db_name,user=db_user,host=db_host,port=db_port,password=db_password)
     cur = conn.cursor()
 
     query = """UPDATE job_applications
                 SET application_status='S'
                 WHERE application_id=%s;
+                UPDATE jobs
+                SET done_by=%s
+                WHERE job_id=%s;
             """
-    cur.execute(query,(application_id,))
+    query2 = "SELECT applicant FROM job_applications WHERE application_id=%s"
+    cur.execute(query2,(application_id,))
+    done_by = cur.fetchone()
+    cur.execute(query,(application_id,done_by,job,))
     conn.commit()
     cur.close()
     conn.close()
@@ -367,3 +389,15 @@ def update_job_in_db(job_id,category,description,duration,amount,location):
     conn.commit()
     cur.close()
     conn.close()
+
+def add_job_rating(job,rating_value,comment):
+    conn = psycopg2.connect(database=db_name,user=db_user,host=db_host,port=db_port,password=db_password)
+    cur = conn.cursor(cursor_factory=DictCursor)
+
+    query = "INSERT INTO job_ratings(job_rated,rating_value,comment) VALUES(%s,%s,%s);"
+    cur.execute(query,(job,int(rating_value),comment,))
+    
+    conn.commit()
+    cur.close()
+    conn.close()
+    
