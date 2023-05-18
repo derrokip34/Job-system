@@ -21,9 +21,11 @@ query = """
             gender VARCHAR(2),
             dob DATE,
             password VARCHAR(70),
-            profile_pic_path VARCHAR(100),
-            overview VARCHAR(200),
+            profile_pic_path VARCHAR(100) DEFAULT 'profile_pics/anonymous.png',
+            overview VARCHAR(200) DEFAULT 'Hi There, I am new here',
             location VARCHAR(50),
+            last_login TIMESTAMP,
+            user_status VARCHAR(10),
             session_id UUID
         );
         CREATE TABLE job_seekers(
@@ -35,13 +37,15 @@ query = """
             gender VARCHAR(2),
             dob DATE,
             password VARCHAR(70),
-            category VARCHAR(40),
+            category VARCHAR(255),
             area VARCHAR(40),
             rating INT,
-            profile_pic_path VARCHAR(100),
-            overview VARCHAR(200),
+            profile_pic_path VARCHAR(100) DEFAULT 'profile_pics/anonymous.png',
+            overview VARCHAR(200) DEFAULT 'Hi There, just looking for a job',
             days_availability VARCHAR(100),
             hours_availability VARCHAR(20),
+            last_login TIMESTAMP,
+            user_status VARCHAR(10),
             session_id UUID
         );
         CREATE TABLE jobs(
