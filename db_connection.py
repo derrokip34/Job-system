@@ -4,6 +4,7 @@ import psycopg2,bcrypt,uuid,os
 from psycopg2.extras import DictCursor
 from datetime import date,datetime
 from dotenv import load_dotenv
+from validate import *
 
 load_dotenv()
 
@@ -44,32 +45,27 @@ def get_areas():
     conn.close()
     return columns
 
-def hash_password(password):
-    salt = b'$2b$12$SJv9T2zvJFjI6bYtibhZv.'
-    new_pass_bytes = password.encode('utf-8')
-    new_hashed = bcrypt.hashpw(new_pass_bytes,salt)
-    global hashed_password
-    hashed_password = new_hashed.decode('utf-8')
-    return hashed_password
-
 def get_user(email,input_password):
     new_password = hash_password(input_password)
     conn = psycopg2.connect(database=db_name,user=db_user,host=db_host,port=db_port,password=db_password)
     cur = conn.cursor(cursor_factory=DictCursor)
+    login_time = date.now()
     query = """
-                UPDATE job_seekers SET session_id = %s WHERE  email = %s AND password = %s;
+                UPDATE job_seekers SET session_id = %s AND last_login=%s
+                WHERE  email = %s AND password = %s;
                 SELECT * FROM job_seekers WHERE email = %s AND password = %s;
             
             """
     session_id = str(uuid.uuid4())
-    cur.execute(query,(session_id,email,new_password,email,new_password))
+    cur.execute(query,(session_id,login_time,email,new_password,email,new_password))
     user = cur.fetchone()
     if user is None:
         query = """
-                    UPDATE job_posters SET session_id = %s WHERE  email = %s AND password = %s;
+                    UPDATE job_posters SET session_id = %s AND last_login=%s
+                    WHERE  email = %s AND password = %s;
                     SELECT * FROM job_posters WHERE email = %s AND password = %s;
                 """
-        cur.execute(query,(session_id,email,new_password,email,new_password,))
+        cur.execute(query,(session_id,login_time,email,new_password,email,new_password,))
         user_type = "job_poster"
         user = cur.fetchone()
     else:
