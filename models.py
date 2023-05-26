@@ -15,7 +15,7 @@ class User:
             }
         save_job_seeker_to_db(registration_data)
 
-    def job_poster_registration(self,first_name,last_name,email,phone_num,gender,dob,password):
+    def job_poster_registration(self,first_name,last_name,email,phone_num,gender,dob,password,area):
         registration_data = {
             "first_name": first_name,
             "last_name": last_name,
@@ -23,7 +23,8 @@ class User:
             "dob": dob,
             "phone_no": phone_num,
             "email": email,
-            "password": password
+            "password": password,
+            "area": area
             }
         save_job_poster_to_db(registration_data)
 
@@ -33,6 +34,9 @@ class User:
     
     def log_out(self,sessionid,usertype):
         update_session(sessionid,usertype)
+
+    def update_user_profile(self,session_id,user_type,update_data):
+        update_profile_in_db(user_type,session_id,update_data)
 
     def get_job_poster(self,id):
         user = get_job_poster_by_id(id)

@@ -64,8 +64,10 @@ def home():
         else:
             new2_nav = Button(home_menu_bar,background="lavender",width=15,height=3,text="View Jobs",fg="black",bd=3,command=lambda: [home_frame.destroy(),home_menu_bar.destroy(),job_posters_jobs_view()])
             new2_nav.place(x=10,y=250)
-        new3_nav = Button(home_menu_bar,background="lavender",width=15,height=3,text="Logout",fg="black",bd=3, command=lambda:[home_frame.destroy(),home_menu_bar.destroy(),logout()])
+        new3_nav = Button(home_menu_bar,background="lavender",width=15,height=3,text="View Profile",fg="black",bd=3, command=lambda:[home_frame.destroy(),home_menu_bar.destroy(),profile_pg(session["user_id"])])
         new3_nav.place(x=10,y=330)
+        new4_nav = Button(home_menu_bar,background="lavender",width=15,height=3,text="Logout",fg="black",bd=3, command=lambda:[home_frame.destroy(),home_menu_bar.destroy(),logout()])
+        new4_nav.place(x=10,y=410)
 
     home_pg.mainloop()
 
@@ -284,7 +286,7 @@ def registration_page(user_type):
                         "email": email,
                         "password":hashed_password
                     }
-                    user.job_poster_registration(registration_data["first_name"],registration_data["last_name"],registration_data["email"],registration_data["phone_no"],registration_data["gender"],registration_data["dob"],registration_data["password"])
+                    user.job_poster_registration(registration_data["first_name"],registration_data["last_name"],registration_data["email"],registration_data["phone_no"],registration_data["gender"],registration_data["dob"],registration_data["password"],registration_data["area"])
                 messagebox.showinfo('message',"User succesfully added\nProceed to Login")
                 user_details_window.destroy()
                 registration_frame.destroy()
@@ -384,7 +386,7 @@ def post_job_form():
     p_hr_label = Label(form_frame,text="/hr",background="grey",fg="whitesmoke",font=("Arial",12))
     p_hr_label.place(x=220,y=240)
 
-    job_location_label =Label(form_frame,text="Amount",background="grey",fg="whitesmoke",font=("Arial",12))
+    job_location_label =Label(form_frame,text="Job location",background="grey",fg="whitesmoke",font=("Arial",12))
     job_location_label.place(x=0,y=280)
     areas = ["Balozi Road","Chuna"]
     area_entry = AutocompleteCombobox(form_frame,completevalues=areas)
@@ -946,7 +948,6 @@ def job_details_page(job_id):
     home_pg.mainloop()
 
 def profile_pg(user_id):
-    session["user_type"] = "job_poster"
     if session["user_type"] is "job_seeker":
         users_profile = user.get_job_seeker_dict(user_id)
     elif session["user_type"] is "job_poster":
@@ -965,17 +966,245 @@ def profile_pg(user_id):
     form_frame = Frame(profile_page_frame,bg="gray",borderwidth=10,height=1280)
     form_frame.pack(expand=True,fill=BOTH,padx=20,pady=20)
 
-    img =Image.open("profile_pics/anonymous.png")
+    img =Image.open("profile_pics/cap.png")
     img = img.resize((100, 100))
     tk_img = ImageTk.PhotoImage(img)
     img_label = Label(form_frame, image=tk_img)
-    img_label.pack(anchor=W)
+    img_label.place(x=10,y=10)
 
-    #full_name_label = Label(form_frame, text="Full Name:")
-    #full_name_label.pack(side=TOP,anchor=NW)
-    #full_name = 
-    full_name_value = Label(form_frame, text="John Doe", background="grey")
-    full_name_value.pack(side=LEFT,anchor=NW,pady=20)
+    full_name_var = StringVar(form_frame)
+    full_name_var.set(users_profile["first_name"] + " " + users_profile["last_name"])
+    full_name_label = Label(form_frame, text="Full Name: ",background="grey",fg="black",font=("Helvetica",12))
+    full_name_label.place(x=130,y=10)
+    full_name_value = Entry(form_frame, text=full_name_var,fg="black",font=("Helvetica",10))
+    full_name_value.configure(state="disabled")
+    full_name_value.place(x=270,y=10)
+
+    gender_var = StringVar(form_frame)
+    if users_profile["gender"] == 'M':
+        gender_var.set("Male")
+    else:
+        gender_var.set("Female")
+    gender_display_label = Label(form_frame, text="Gender: ",background="grey",fg="black",font=("Helvetica",12))
+    gender_display_label.place(x=130,y=40)
+    gender_display_value = Entry(form_frame, text=gender_var,fg="black",font=("Helvetica",10))
+    gender_display_value.configure(state="disabled")
+    gender_display_value.place(x=270,y=40)
+
+    dob_var = StringVar(form_frame)
+    dob_var.set(users_profile["dob"])
+    dob_display_label = Label(form_frame, text="Date of Birth: ",background="grey",fg="black",font=("Helvetica",12))
+    dob_display_label.place(x=130,y=70)
+    dob_display_value = Entry(form_frame, text=dob_var,fg="black",font=("Helvetica",10))
+    dob_display_value.configure(state="disabled")
+    dob_display_value.place(x=270,y=70)
+
+    phone_num_var = StringVar(form_frame)
+    phone_num_var.set(users_profile["phone_num"])
+    phone_num_label = Label(form_frame, text="Phone number: ",background="grey",fg="black",font=("Helvetica",12))
+    phone_num_label.place(x=130,y=100)
+    phone_num_values = Entry(form_frame, text=phone_num_var,background="grey",fg="black",font=("Helvetica",10))
+    phone_num_values.configure(state="disabled")
+    phone_num_values.place(x=270,y=100)
+
+    email_var = StringVar(form_frame)
+    email_var.set(users_profile["email"])
+    email_label = Label(form_frame, text="Email: ",background="grey",fg="black",font=("Helvetica",12))
+    email_label.place(x=130,y=130)
+    email_values = Entry(form_frame, text=email_var,background="grey",fg="black",font=("Helvetica",10))
+    email_values.configure(state="disabled")
+    email_values.place(x=270,y=130)
+
+    bio_display_label = Label(form_frame, text="Bio: ",background="grey",fg="black",font=("Helvetica",12))
+    bio_display_label.place(x=130,y=160)
+    bio_value = Text(form_frame,width=40,height=5)
+    bio_value.place(x=270,y=160)
+    bio_value.insert('1.0',users_profile["overview"])
+    bio_value.config(state=DISABLED)
+
+    if session["user_type"] == "job_seeker":
+        job_categories_var = StringVar(form_frame)
+        job_categories_var.set(users_profile["category"])
+        job_categories_label = Label(form_frame, text="Job Categories: ",background="grey",fg="black",font=("Helvetica",12))
+        job_categories_label.place(x=130,y=260)
+        job_categories_values = Entry(form_frame,text=job_categories_var,fg="black",font=("Helvetica",10))
+        job_categories_values.configure(state="disabled")
+        job_categories_values.place(x=270,y=260)
+
+        rate_var = StringVar(form_frame)
+        rate_var.set(users_profile["rate"])
+        rate_label = Label(form_frame, text="Payment rate/hour: ",background="grey",fg="black",font=("Helvetica",12))
+        rate_label.place(x=130,y=290)
+        rate_values = Entry(form_frame,text=rate_var,fg="black",font=("Helvetica",10))
+        rate_values.configure(state="disabled")
+        rate_values.place(x=270,y=290)
+    
+    def update_profile_window():
+        update_profile_page = Tk()
+        update_profile_page.geometry("700x500")
+        update_profile_page.title(users_profile["first_name"] + " " + users_profile["last_name"] + "'s profile")
+        update_profile_page.configure(background="gray")
+
+        fname_var = StringVar(update_profile_page)
+        fname_var.set(users_profile["first_name"])
+        f_name_label=Label(update_profile_page,text="First Name",background="grey",fg="whitesmoke",font=("Arial",12))
+        f_name_label.place(x=20,y=50)
+        fname_entry=Entry(update_profile_page,width=30,text=fname_var)
+        fname_entry.place(x=160,y=50)
+        lname_var = StringVar(update_profile_page)
+        lname_var.set(users_profile["last_name"])
+        l_name_label=Label(update_profile_page,fg="whitesmoke",font=("Arial",12),background="gray",text="    Last Name")
+        l_name_label.place(x=310,y=50)
+        lname_entry=Entry(update_profile_page,width=30,text=lname_var)
+        lname_entry.place(x=420,y=50)
+
+        phone_no_var = StringVar(update_profile_page)
+        phone_no_var.set(users_profile["phone_num"])
+        phone_no_label=Label(update_profile_page,text="Phone Number",background="grey",fg="whitesmoke",font=("Arial",12))
+        phone_no_label.place(x=20,y=90)
+        phone_no_entry=Entry(update_profile_page,width=20,text=phone_no_var)
+        phone_no_entry.place(x=160,y=90)
+        update_email_var = StringVar(update_profile_page)
+        update_email_var.set(users_profile["email"])
+        email_label = Label(update_profile_page,text="Email",background="grey",fg="whitesmoke",font=("Arial",12))
+        email_label.place(x=330,y=90)
+        email_entry = Entry(update_profile_page,width=25,text=update_email_var)
+        email_entry.place(x=420,y=90)
+
+        profile_pic_var = StringVar(update_profile_page)
+        profile_pic_var.set(users_profile["profile_pic_path"])
+        profile_pic_label = Label(update_profile_page,text="Profile picture",background="grey",fg="whitesmoke",font=("Arial",12))
+        profile_pic_label.place(x=20,y=130)
+        profile_pic_entry = Entry(update_profile_page,width=25,text=profile_pic_var)
+        profile_pic_entry.place(x=160,y=130)
+        profile_pic_entry.configure(state="disabled")
+        change_profile_pic_button = Button(update_profile_page,text="Change",background="lavender",command=lambda:[])
+        change_profile_pic_button.place(x=320,y=130)
+
+        bio_update_label = Label(update_profile_page,text="Bio",background="grey",fg="whitesmoke",font=("Arial",12))
+        bio_update_label.place(x=20,y=170)
+        bio_update_entry = Text(update_profile_page,width=40,height=5)
+        bio_update_entry.place(x=160,y=170)
+        bio_update_entry.insert("1.0",users_profile["overview"])
+
+        location_update_label = Label(update_profile_page,text="Location",background="grey",fg="whitesmoke",font=("Arial",12))
+        location_update_label.place(x=20,y=270)
+        areas = ["Balozi Road","Chuna"]
+        location_update_entry = AutocompleteCombobox(update_profile_page,completevalues=areas)
+        location_update_entry.set(users_profile["location"])
+        location_update_entry.place(x=160,y=270)
+
+        old_password_label = Label(update_profile_page,text="Password",background="grey",fg="whitesmoke",font=("Arial",12))
+        old_password_label.place(x=20,y=310)
+        old_password_entry = Entry(update_profile_page,width=25,show="*")
+        old_password_entry.place(x=160,y=310)
+
+        new_password_label = Label(update_profile_page,text="Confirm Password",background="grey",fg="whitesmoke",font=("Arial",12))
+        new_password_label.place(x=20,y=350)
+        new_password_entry = Entry(update_profile_page,width=25,show="*")
+        new_password_entry.place(x=160,y=350)
+
+        confirm_new_password_label = Label(update_profile_page,text="Confirm Password",background="grey",fg="whitesmoke",font=("Arial",12))
+        confirm_new_password_label.place(x=20,y=390)
+        confirm_new_password_entry = Entry(update_profile_page,width=25,show="*")
+        confirm_new_password_entry.place(x=160,y=390)
+
+        show_password = Button(update_profile_page,text="Show Password",command=lambda:[toggle_show_hide_password()])
+        show_password.place(x=350,y=390)
+
+        update_profile_button = Button(update_profile_page,text="Update Profile",background="lavender",command=lambda:[update_profile()])
+        update_profile_button.place(x=200,y=420)
+
+        def toggle_show_hide_password():
+            if old_password_entry.cget("show") == "":
+                old_password_entry.config(show="*")
+                new_password_entry.config(show="*")
+                confirm_new_password_entry.config(show="*")
+                show_password.config(text="Show Password")
+            else:
+                old_password_entry.config(show="")
+                confirm_new_password_entry.config(show="")
+                new_password_entry.config(show="")
+                show_password.config(text="Hide Password")
+
+        def update_profile():
+            first_name = fname_entry.get()
+            last_name = lname_entry.get()
+            phone_no = phone_no_entry.get()
+            email = email_entry.get()
+            profile_pic_path = profile_pic_entry.get()
+            bio = bio_update_entry.get("1.0","end")
+            location = location_update_entry.get()
+            old_password = old_password_entry.get()
+            new_password = new_password_entry.get()
+            new_password_confrmation = confirm_new_password_entry.get()
+
+            new_hashed_password = hash_password(new_password)
+            old_hashed_password = hash_password(old_password)
+
+
+            if new_password:
+                #print(new_password)
+                if users_profile["password"] != old_hashed_password:
+                    password_msg = "Your old password is incorrect"
+                    messagebox.showinfo('message',password_msg)
+                    return
+                elif len(new_password) < 8:
+                    password_msg = "Password must be longer than eight characters"
+                    messagebox.showinfo('message',password_msg)
+                    return
+                elif not re.search(r"[A-Z]",new_password):
+                    password_msg = "Password must have at least one uppercase letter"
+                    messagebox.showinfo('message',password_msg)
+                    return
+                elif not re.search(r"\d",new_password):
+                    password_msg = "Password must have at least one number"
+                    messagebox.showinfo('message',password_msg)
+                    return
+                elif new_password != new_password_confrmation:
+                    password_msg = "Passwords must match"
+                    messagebox.showinfo('message',password_msg)
+                    return
+                
+            elif not re.match(r"[^@]+@[^@]+\.[^@]+", email):
+                email_msg = "Invalid Email"
+                messagebox.showinfo('message',email_msg)
+                
+            if new_password:            
+                update_data = {
+                    "first_name": first_name,
+                    "last_name": last_name,
+                    "location": location,
+                    "phone_no": phone_no,
+                    "email": email,
+                    "password":new_hashed_password,
+                    "profile_pic_path": profile_pic_path,
+                    "bio": bio
+                }
+                user.update_user_profile(session["session_id"],session["user_type"],update_data)
+                    
+            else:
+                update_data = {
+                    "first_name": first_name,
+                    "last_name": last_name,
+                    "location": location,
+                    "phone_no": phone_no,
+                    "email": email,
+                    "password":users_profile["password"],
+                    "profile_pic_path": profile_pic_path,
+                    "bio": bio
+                }
+                user.update_user_profile(session["session_id"],session["user_type"],update_data)
+                
+            profile_page_frame.destroy()
+            profile_page_menu_bar.destroy()
+            update_profile_page.destroy()
+            profile_pg(session["user_id"])
+   
+        update_profile_page.mainloop()
+
+    update_profile_button = Button(form_frame,text="Update Profile",background="lavender",command=lambda:[update_profile_window()])
+    update_profile_button.place(x=200,y=320)
 
     home_nav = Button(profile_page_menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=5,command=lambda:[profile_page_frame.destroy(),profile_page_menu_bar.destroy(),home()])
     home_nav.place(x=10,y=10)
@@ -997,36 +1226,4 @@ def profile_pg(user_id):
 
     home_pg.mainloop()
 
-def update_profile(user_id):
-    if session["user_type"] is "job_seeker":
-        user_name = user.get_job_seeker(user_id)
-    elif session["user_type"] is "job_poster":
-        user_name = user.get_job_poster(user_id)
-
-    home_pg.title(f"{user_name}'s Profile")
-    session["user_type"] = "job_seeker"
-
-    set_profile_menu_bar = Frame(home_pg,bg="dimgrey",width=150,height=1280)
-    set_profile_menu_bar.pack(side=LEFT)
-
-    set_profile_frame = Frame(home_pg,bg="wheat",borderwidth=10,width=550,height=1280)
-    set_profile_frame.pack(expand=True,fill=BOTH)
-
-    form_frame = Frame(set_profile_frame,bg="gray",borderwidth=10,height=1280)
-    form_frame.pack(expand=True,fill=BOTH,padx=20,pady=20)
-
-    home_nav = Button(set_profile_menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=5,command=lambda:[set_profile_frame.destroy(),set_profile_menu_bar.destroy(),home()])
-    home_nav.place(x=10,y=10)
-    login_nav = Button(set_profile_menu_bar,background="lavender",width=15,height=3,text="Login",fg="black",bd=3,command=lambda: [set_profile_frame.destroy(),set_profile_menu_bar.destroy(),login_page()])
-    login_nav.place(x=10,y=90)
-    if session["logged_in"] is True:
-        new1_nav = Button(set_profile_menu_bar,background="lavender",width=15,height=3,text="Post Job",fg="black",bd=3)
-        new1_nav.place(x=10,y=170)
-        new2_nav = Button(set_profile_menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3)
-        new2_nav.place(x=10,y=250)
-        new3_nav = Button(set_profile_menu_bar,background="lavender",width=15,height=3,text="Logout",fg="black",bd=3,command=lambda:[set_profile_frame.destroy(),set_profile_menu_bar.destroy(),logout()])
-        new3_nav.place(x=10,y=330)
-
-    home_pg.mainloop()
-
-profile_pg(1)
+home()

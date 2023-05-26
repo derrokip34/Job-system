@@ -17,7 +17,7 @@ db_port = os.getenv("DB_PORT")
 def save_job_seeker_to_db(data):
     conn = psycopg2.connect(database=db_name,user=db_user,host=db_host,port=db_port,password=db_password)
     cur = conn.cursor()
-    query = "INSERT INTO job_seekers (first_name,last_name,email,phone_num,gender,dob,category,area,password) VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s);"
+    query = "INSERT INTO job_seekers (first_name,last_name,email,phone_num,gender,dob,category,location,password) VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s);"
     cur.execute(query, (data["first_name"],data["last_name"],data["email"],data["phone_no"],data["gender"],data["dob"],data["category"],data["area"],data["password"]))
     conn.commit()
     cur.close()
@@ -27,8 +27,8 @@ def save_job_poster_to_db(data):
     conn = psycopg2.connect(database=db_name,user=db_user,host=db_host,port=db_port,password=db_password)
     cur = conn.cursor()
     session_id = str(uuid.uuid4())
-    query = "INSERT INTO job_posters (first_name,last_name,email,phone_num,gender,dob,password) VALUES(%s,%s,%s,%s,%s,%s,%s);"
-    cur.execute(query, (data["first_name"],data["last_name"],data["email"],data["phone_no"],data["gender"],data["dob"],data["password"]))
+    query = "INSERT INTO job_posters (first_name,last_name,email,phone_num,gender,dob,password,location) VALUES(%s,%s,%s,%s,%s,%s,%s,%s);"
+    cur.execute(query, (data["first_name"],data["last_name"],data["email"],data["phone_no"],data["gender"],data["dob"],data["password"],data["area"]))
     conn.commit()
     cur.close()
     conn.close()
@@ -49,9 +49,9 @@ def get_user(email,input_password):
     new_password = hash_password(input_password)
     conn = psycopg2.connect(database=db_name,user=db_user,host=db_host,port=db_port,password=db_password)
     cur = conn.cursor(cursor_factory=DictCursor)
-    login_time = date.now()
+    login_time = datetime.now()
     query = """
-                UPDATE job_seekers SET session_id = %s AND last_login=%s
+                UPDATE job_seekers SET session_id=%s, last_login=%s
                 WHERE  email = %s AND password = %s;
                 SELECT * FROM job_seekers WHERE email = %s AND password = %s;
             
@@ -61,7 +61,7 @@ def get_user(email,input_password):
     user = cur.fetchone()
     if user is None:
         query = """
-                    UPDATE job_posters SET session_id = %s AND last_login=%s
+                    UPDATE job_posters SET session_id=%s, last_login=%s
                     WHERE  email = %s AND password = %s;
                     SELECT * FROM job_posters WHERE email = %s AND password = %s;
                 """
@@ -382,6 +382,27 @@ def update_job_in_db(job_id,category,description,duration,amount,location):
           """
     cur.execute(query,(category,description,int(duration),int(amount),location,time_updated,job_id,))
     
+    conn.commit()
+    cur.close()
+    conn.close()
+
+def update_profile_in_db(user_type,session_id,updated_data):
+    conn = psycopg2.connect(database=db_name,user=db_user,host=db_host,port=db_port,password=db_password)
+    cur = conn.cursor()
+
+    if user_type == "job_poster":
+        query="""
+                UPDATE job_posters
+                SET first_name=%s, last_name=%s, location=%s, phone_num=%s, email=%s, password=%s, profile_pic_path=%s, overview=%s
+                WHERE session_id=%s;
+            """
+    elif user_type == "job_seeker":
+        query="""
+                UPDATE job_seekers
+                SET first_name=%s, last_name=%s, location=%s, phone_num=%s, email=%s, password=%s, profile_pic_path=%s, overview=%s
+                WHERE session_id=%s;
+            """
+    cur.execute(query,(updated_data["first_name"],updated_data["last_name"],updated_data["location"],updated_data["phone_no"],updated_data["email"],updated_data["password"],updated_data["profile_pic_path"],updated_data["bio"],session_id,))
     conn.commit()
     cur.close()
     conn.close()
