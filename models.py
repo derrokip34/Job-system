@@ -145,6 +145,10 @@ class Job:
 
     def post_job_rating(self,job,rating_value,comment):
         add_job_rating(job,rating_value,comment)
+
+    def get_no_of_applicants(self,job_id):
+        num_of_applicants = count_applications(job_id)
+        return num_of_applicants 
     
 def get_areas_array():
     areas = get_areas()

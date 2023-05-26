@@ -893,45 +893,77 @@ def job_details_page(job_id):
     form_frame = Frame(job_details_frame,bg="gray",borderwidth=10,height=1280)
     form_frame.pack(expand=True,fill=BOTH,padx=20,pady=20)
 
-    job_id_label = Label(form_frame,text=f"Job J-{job_id}",background="grey",fg="whitesmoke",font=("Arial",20))
+    job_id_label = Label(form_frame,text=f"Job J-{job_id}",background="grey",fg="black",font=("Arial",20))
     job_id_label.place(x=20,y=0)
 
-    job_category_label = Label(form_frame,text="Category:\t\t"+spec_job["job_category"],background="grey",fg="whitesmoke",font=("Arial",15))
+    job_category_var = StringVar(form_frame)
+    job_category_var.set(spec_job["job_category"])
+    job_category_label = Label(form_frame,text="Category",background="grey",fg="black",font=("Arial",12))
     job_category_label.place(x=20,y=50)
+    job_category_value = Entry(form_frame,text=job_category_var,fg="black",font=("Helvetica",10))
+    job_category_value.place(x=150,y=50)
+    job_category_value.configure(state="disabled")
 
-    job_description_label = Label(form_frame,text="Description:\t",background="grey",fg="whitesmoke",font=("Arial",15))
-    job_description_label.place(x=20,y=100)
+    job_description_label = Label(form_frame, text="Bio: ",background="grey",fg="black",font=("Helvetica",12))
+    job_description_label.place(x=20,y=80)
+    job_description_value = Text(form_frame,width=40,height=5)
+    job_description_value.place(x=150,y=80)
+    job_description_value.insert('1.0',spec_job["job_description"])
+    job_description_value.config(state=DISABLED)
 
-    job_description_label2 = Label(form_frame,wraplength=400,text=spec_job["job_description"],background="grey",fg="whitesmoke",font=("Arial",15))
-    job_description_label2.place(x=200,y=100)
-
-    date = spec_job["date_posted"]
-    date_posted_label = Label(form_frame,text=f"Posted on:\t{date}",background="grey",fg="whitesmoke",font=("Arial",15))
-    date_posted_label.place(x=20,y=150)
+    job_date_var = StringVar(form_frame)
+    job_date_var.set(spec_job["date_posted"])
+    job_date_label = Label(form_frame,text="Date posted",background="grey",fg="black",font=("Arial",12))
+    job_date_label.place(x=20,y=180)
+    job_date_value = Entry(form_frame,text=job_date_var,fg="black",font=("Helvetica",10))
+    job_date_value.place(x=150,y=180)
+    job_date_value.configure(state="disabled")
 
     posted_user = user.get_job_poster(spec_job["posted_by"])
-    posted_by_label = Label(form_frame,text=f"Posted by:\t" + posted_user,background="grey",fg="whitesmoke",font=("Arial",15))
-    posted_by_label.place(x=20,y=200)
+    posted_by_var = StringVar(form_frame)
+    posted_by_var.set(posted_user)
+    posted_by_label = Label(form_frame,text="Posted by",background="grey",fg="black",font=("Arial",12))
+    posted_by_label.place(x=20,y=210)
+    posted_by_value = Entry(form_frame,text=posted_by_var,fg="black",font=("Helvetica",10))
+    posted_by_value.place(x=150,y=210)
+    posted_by_value.configure(state="disabled")
 
     if spec_job["done_by"]  is not None:
         done_by_user = user.get_job_seeker(spec_job["done_by"])
     else:
         done_by_user = "No one selected yet"
-    done_by_label = Label(form_frame,text=f"Done by:\t\t" + done_by_user,background="grey",fg="whitesmoke",font=("Arial",15))
-    done_by_label.place(x=20,y=250)
+    done_by_var = StringVar(form_frame)
+    done_by_var.set(done_by_user)
+    done_by_label = Label(form_frame,text="Done by",background="grey",fg="black",font=("Arial",12))
+    done_by_label.place(x=20,y=240)
+    done_by_value = Entry(form_frame,text=done_by_var,fg="black",font=("Helvetica",10))
+    done_by_value.place(x=150,y=240)
+    done_by_value.configure(state="disabled")
 
-    if spec_job["job_duration"] is 'L':
-        job_duration = "Large(More than one working day)"
-    elif spec_job["job_duration"] is 'M':
-        job_duration = "Medium(5-12 hours)"
-    else:
-        job_duration = "Small(1-5 hours)"
-    duration_label = Label(form_frame,text=f"Job Duration by:\t" + job_duration,background="grey",fg="whitesmoke",font=("Arial",15))
-    duration_label.place(x=20,y=300)
+    job_duration_var = StringVar(form_frame)
+    job_duration_var.set(str(spec_job["job_duration"]))
+    job_duration_label = Label(form_frame,text="Job Duration(hrs)",background="grey",fg="black",font=("Arial",12))
+    job_duration_label.place(x=20,y=270)
+    job_duration_value = Entry(form_frame,text=job_duration_var,fg="black",font=("Helvetica",10))
+    job_duration_value.place(x=150,y=270)
+    job_duration_value.configure(state="disabled")
 
-    job_cost = spec_job["total_amount"]
-    job_cost_label = Label(form_frame,text=f"Price:\t\t{job_cost}" + " Kshs.",background="grey",fg="whitesmoke",font=("Arial",15))
-    job_cost_label.place(x=20,y=350)
+    job_cost_var = StringVar(form_frame)
+    job_cost_var.set(spec_job["total_amount"])
+    job_cost_label = Label(form_frame,text="Total Amount",background="grey",fg="black",font=("Arial",12))
+    job_cost_label.place(x=20,y=300)
+    job_cost_value = Entry(form_frame,text=posted_by_var,fg="black",font=("Helvetica",10))
+    job_cost_value.place(x=150,y=300)
+    job_cost_value.configure(state="disabled")
+
+    no_of_applicants = job.get_no_of_applicants(job_id)
+    no_of_applicants_var = StringVar(form_frame)
+    no_of_applicants_var.set(str(no_of_applicants))
+    no_of_applicants_label = Label(form_frame,text="No. of applicants",background="grey",fg="black",font=("Arial",12))
+    no_of_applicants_label.place(x=20,y=300)
+    no_of_applicants_value = Entry(form_frame,text=no_of_applicants_var,fg="black",font=("Helvetica",10))
+    no_of_applicants_value.place(x=150,y=300)
+    no_of_applicants_value.configure(state="disabled")
 
     home_nav = Button(job_details_menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=5,command=lambda:[job_details_frame.destroy(),job_details_menu_bar.destroy(),home()])
     home_nav.place(x=10,y=10)

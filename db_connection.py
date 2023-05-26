@@ -417,4 +417,18 @@ def add_job_rating(job,rating_value,comment):
     conn.commit()
     cur.close()
     conn.close()
+
+def count_applications(job_id):
+    conn = psycopg2.connect(database=db_name,user=db_user,host=db_host,port=db_port,password=db_password)
+    cur = conn.cursor()
+
+    query = "SELECT COUNT(applicant) FROM job_applications WHERE job=%s;"
+    cur.execute(query,(job_id,))
+    applicants_number =  cur.fetchone()
     
+    conn.commit()
+    cur.close()
+    conn.close()
+    return applicants_number[0]
+
+print(count_applications(1))
