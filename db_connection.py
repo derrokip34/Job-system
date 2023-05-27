@@ -411,8 +411,12 @@ def add_job_rating(job,rating_value,comment):
     conn = psycopg2.connect(database=db_name,user=db_user,host=db_host,port=db_port,password=db_password)
     cur = conn.cursor(cursor_factory=DictCursor)
 
-    query = "INSERT INTO job_ratings(job_rated,rating_value,comment) VALUES(%s,%s,%s);"
-    cur.execute(query,(job,int(rating_value),comment,))
+    query = """INSERT INTO job_ratings(job_rated,rating_value,comment) VALUES(%s,%s,%s);
+                UPDATE jobs
+                SET rating=%s
+                WHERE job_id=%s;
+            """
+    cur.execute(query,(job,int(rating_value),comment,int(rating_value),job,))
     
     conn.commit()
     cur.close()
@@ -420,7 +424,7 @@ def add_job_rating(job,rating_value,comment):
 
 def count_applications(job_id):
     conn = psycopg2.connect(database=db_name,user=db_user,host=db_host,port=db_port,password=db_password)
-    cur = conn.cursor()
+    cur = conn.cursor(cursor_factory=DictCursor)
 
     query = "SELECT COUNT(applicant) FROM job_applications WHERE job=%s;"
     cur.execute(query,(job_id,))
@@ -431,4 +435,15 @@ def count_applications(job_id):
     conn.close()
     return applicants_number[0]
 
-print(count_applications(1))
+def get_avg_rating(user_id):
+    conn = psycopg2.connect(database=db_name,user=db_user,host=db_host,port=db_port,password=db_password)
+    cur = conn.cursor(cursor_factory=DictCursor)
+
+    query = "SELECT AVG(rating) FROM jobs WHERE done_by=%s;"
+    cur.execute(query,(user_id,))
+    avg_rating =  cur.fetchone()
+    
+    conn.commit()
+    cur.close()
+    conn.close()
+    return avg_rating[0]

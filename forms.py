@@ -1,10 +1,10 @@
 from tkinter import *
-from tkinter import messagebox
+from tkinter import messagebox,filedialog
 from ttkwidgets.autocomplete import AutocompleteCombobox
 from models import User,Job,get_areas_array
-import re,datetime
+import re,datetime,shutil
 from validate import *
-from PIL import Image,ImageTk
+from PIL import Image,ImageTk,ImageDraw
 
 session = {
     "username": None,
@@ -998,10 +998,25 @@ def profile_pg(user_id):
     form_frame = Frame(profile_page_frame,bg="gray",borderwidth=10,height=1280)
     form_frame.pack(expand=True,fill=BOTH,padx=20,pady=20)
 
-    img =Image.open("profile_pics/cap.png")
+    def make_rounded_image(image):
+        width, height = image.size
+        radius = min(width, height) // 2
+
+        mask = Image.new('L', (width, height), 0)
+        draw = ImageDraw.Draw(mask)
+        draw.ellipse((0, 0, width, height), fill=255)
+
+        rounded_image = Image.new('RGBA', (width, height))
+        rounded_image.paste(image, (0, 0), mask=mask)
+
+        return rounded_image
+
+    img =Image.open(users_profile["profile_pic_path"])
     img = img.resize((100, 100))
-    tk_img = ImageTk.PhotoImage(img)
+    rounded_image = make_rounded_image(img)
+    tk_img = ImageTk.PhotoImage(rounded_image)
     img_label = Label(form_frame, image=tk_img)
+    img_label.image = tk_img
     img_label.place(x=10,y=10)
 
     full_name_var = StringVar(form_frame)
@@ -1070,6 +1085,12 @@ def profile_pg(user_id):
         rate_values = Entry(form_frame,text=rate_var,fg="black",font=("Helvetica",10))
         rate_values.configure(state="disabled")
         rate_values.place(x=270,y=290)
+
+        update_profile_button = Button(form_frame,height=3,text="Update Profile",background="lavender",command=lambda:[update_profile_window()])
+        update_profile_button.place(x=200,y=350)
+    else:
+        update_profile_button = Button(form_frame,height=3,text="Update Profile",background="lavender",command=lambda:[update_profile_window()])
+        update_profile_button.place(x=200,y=260)
     
     def update_profile_window():
         update_profile_page = Tk()
@@ -1110,8 +1131,24 @@ def profile_pg(user_id):
         profile_pic_entry = Entry(update_profile_page,width=25,text=profile_pic_var)
         profile_pic_entry.place(x=160,y=130)
         profile_pic_entry.configure(state="disabled")
-        change_profile_pic_button = Button(update_profile_page,text="Change",background="lavender",command=lambda:[])
+        change_profile_pic_button = Button(update_profile_page,text="Change",background="lavender",command=lambda:[open_image()])
         change_profile_pic_button.place(x=320,y=130)
+
+        def save_image(file_path):
+            destination_folder = "profile_pics"
+            new_img_name = users_profile["id"]
+            new_file_name = f"U-{new_img_name}.png"
+            destination_path = f"{destination_folder}/{new_file_name}"
+            shutil.copyfile(file_path, destination_path)
+
+            return destination_path
+
+        def open_image():
+            file_path = filedialog.askopenfilename(filetypes=[("Image Files", "*.png;*.jpg;*.jpeg;*.gif")])
+            if file_path:
+                new_image_path = save_image(file_path)
+            profile_pic_var.set(new_image_path)
+            profile_pic_entry.config(text=profile_pic_var)
 
         bio_update_label = Label(update_profile_page,text="Bio",background="grey",fg="whitesmoke",font=("Arial",12))
         bio_update_label.place(x=20,y=170)
@@ -1126,26 +1163,55 @@ def profile_pg(user_id):
         location_update_entry.set(users_profile["location"])
         location_update_entry.place(x=160,y=270)
 
-        old_password_label = Label(update_profile_page,text="Password",background="grey",fg="whitesmoke",font=("Arial",12))
-        old_password_label.place(x=20,y=310)
-        old_password_entry = Entry(update_profile_page,width=25,show="*")
-        old_password_entry.place(x=160,y=310)
+        if session["user_type"] is "job_seeker":
+            payment_rate_var = StringVar(update_profile_page)
+            payment_rate_var.set(users_profile["rate"])
+            payment_rate_label = Label(update_profile_page,text="Payment Rate",background="grey",fg="whitesmoke",font=("Arial",12))
+            payment_rate_label.place(x=20,y=310)
+            payment_rate_entry = Entry(update_profile_page,width=25,text=payment_rate_var)
+            payment_rate_entry.place(x=160,y=310)
 
-        new_password_label = Label(update_profile_page,text="Confirm Password",background="grey",fg="whitesmoke",font=("Arial",12))
-        new_password_label.place(x=20,y=350)
-        new_password_entry = Entry(update_profile_page,width=25,show="*")
-        new_password_entry.place(x=160,y=350)
+            old_password_label = Label(update_profile_page,text="Old Password",background="grey",fg="whitesmoke",font=("Arial",12))
+            old_password_label.place(x=20,y=350)
+            old_password_entry = Entry(update_profile_page,width=25,show="*")
+            old_password_entry.place(x=160,y=350)
 
-        confirm_new_password_label = Label(update_profile_page,text="Confirm Password",background="grey",fg="whitesmoke",font=("Arial",12))
-        confirm_new_password_label.place(x=20,y=390)
-        confirm_new_password_entry = Entry(update_profile_page,width=25,show="*")
-        confirm_new_password_entry.place(x=160,y=390)
+            new_password_label = Label(update_profile_page,text="New Password",background="grey",fg="whitesmoke",font=("Arial",12))
+            new_password_label.place(x=20,y=390)
+            new_password_entry = Entry(update_profile_page,width=25,show="*")
+            new_password_entry.place(x=160,y=390)
 
-        show_password = Button(update_profile_page,text="Show Password",command=lambda:[toggle_show_hide_password()])
-        show_password.place(x=350,y=390)
+            confirm_new_password_label = Label(update_profile_page,text="Confirm new password",background="grey",fg="whitesmoke",font=("Arial",12))
+            confirm_new_password_label.place(x=340,y=390)
+            confirm_new_password_entry = Entry(update_profile_page,width=25,show="*")
+            confirm_new_password_entry.place(x=520,y=390)
 
-        update_profile_button = Button(update_profile_page,text="Update Profile",background="lavender",command=lambda:[update_profile()])
-        update_profile_button.place(x=200,y=420)
+            show_password = Button(update_profile_page,text="Show Password",command=lambda:[toggle_show_hide_password()])
+            show_password.place(x=350,y=430)
+
+            update_profile_button = Button(update_profile_page,text="Update Profile",height=3,background="lavender",command=lambda:[update_profile()])
+            update_profile_button.place(x=200,y=460)
+        else:
+            old_password_label = Label(update_profile_page,text="Old Password",background="grey",fg="whitesmoke",font=("Arial",12))
+            old_password_label.place(x=20,y=310)
+            old_password_entry = Entry(update_profile_page,width=25,show="*")
+            old_password_entry.place(x=160,y=310)
+
+            new_password_label = Label(update_profile_page,text="New Password",background="grey",fg="whitesmoke",font=("Arial",12))
+            new_password_label.place(x=20,y=350)
+            new_password_entry = Entry(update_profile_page,width=25,show="*")
+            new_password_entry.place(x=160,y=350)
+
+            confirm_new_password_label = Label(update_profile_page,text="Confirm new password",background="grey",fg="whitesmoke",font=("Arial",12))
+            confirm_new_password_label.place(x=340,y=350)
+            confirm_new_password_entry = Entry(update_profile_page,width=25,show="*")
+            confirm_new_password_entry.place(x=520,y=350)
+
+            show_password = Button(update_profile_page,text="Show Password",command=lambda:[toggle_show_hide_password()])
+            show_password.place(x=350,y=390)
+
+            update_profile_button = Button(update_profile_page,text="Update Profile",height=3,background="lavender",command=lambda:[update_profile()])
+            update_profile_button.place(x=200,y=430)
 
         def toggle_show_hide_password():
             if old_password_entry.cget("show") == "":
@@ -1234,9 +1300,6 @@ def profile_pg(user_id):
             profile_pg(session["user_id"])
    
         update_profile_page.mainloop()
-
-    update_profile_button = Button(form_frame,text="Update Profile",background="lavender",command=lambda:[update_profile_window()])
-    update_profile_button.place(x=200,y=320)
 
     home_nav = Button(profile_page_menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=5,command=lambda:[profile_page_frame.destroy(),profile_page_menu_bar.destroy(),home()])
     home_nav.place(x=10,y=10)

@@ -27,7 +27,7 @@ def create_db_tables():
                     overview VARCHAR(200) DEFAULT 'Hi There, I am new here',
                     location VARCHAR(50),
                     last_login TIMESTAMP,
-                    user_status VARCHAR(10),
+                    user_status VARCHAR(10) DEFAULT 'active',
                     session_id UUID
                 );
                 CREATE TABLE job_seekers(
@@ -47,7 +47,7 @@ def create_db_tables():
                     days_availability VARCHAR(100),
                     hours_availability VARCHAR(20),
                     last_login TIMESTAMP,
-                    user_status VARCHAR(10),
+                    user_status VARCHAR(10) DEFAULT 'active',
                     rate INT DEFAULT 250,
                     session_id UUID
                 );
@@ -62,7 +62,7 @@ def create_db_tables():
                     total_amount INT,
                     done_on TIMESTAMP,
                     job_status VARCHAR(10),
-                    rating INT,
+                    rating INT DEFAULT 0,
                     job_location VARCHAR(30),
                     updated_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     FOREIGN KEY (posted_by) REFERENCES job_posters(id),
@@ -79,9 +79,10 @@ def create_db_tables():
                 );
                 CREATE TABLE job_ratings(
                     rating_id SERIAL PRIMARY KEY,
-                    rating_value INT,
+                    rating_value INT DEFAULT 0,
                     comment VARCHAR(255),
                     job_rated INT,
+                    job_seeker_rated INT,
                     FOREIGN KEY (job_rated) REFERENCES jobs(job_id)
                 );
                 CREATE TABLE job_categories(
