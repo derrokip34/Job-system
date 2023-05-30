@@ -113,7 +113,6 @@ def update_session(session_id,user_type):
     conn.close()
 
 def get_users():
-    print(db_name)
     conn = psycopg2.connect(database=db_name,user=db_user,host=db_host,port=db_port,password=db_password)
     cur = conn.cursor()
     query = "SELECT first_name,last_name,email FROM job_posters;"
@@ -151,6 +150,42 @@ def get_job_seekers():
     cur.close()
     conn.close()
     return users
+
+def delete_user(user_type,user_id):
+    conn = psycopg2.connect(database=db_name,user=db_user,host=db_host,port=db_port,password=db_password)
+    cur = conn.cursor(cursor_factory=DictCursor)
+
+    if user_type == "job_posters":
+        query = "DELETE FROM job_posters WHERE id=%s;"
+    elif user_type == "job_seekers":
+        query = "DELETE FROM job_seekers WHERE id=%s;"
+    cur.execute(query,(user_id,))
+
+    conn.commit()
+    cur.close()
+    conn.close()
+
+def update_user_status(user_type,user_id,user_status):
+    conn = psycopg2.connect(database=db_name,user=db_user,host=db_host,port=db_port,password=db_password)
+    cur = conn.cursor(cursor_factory=DictCursor)
+
+    if user_type == "job_posters":
+        query = """
+                UPDATE job_posters
+                SET user_status=%s
+                WHERE id=%s;
+                """
+    elif user_type == "job_seekers":
+        query = """
+                UPDATE job_seekers
+                SET user_status=%s
+                WHERE id=%s;
+                """
+    cur.execute(query,(user_id,user_status,))
+
+    conn.commit()
+    cur.close()
+    conn.close()
 
 def add_job_to_db(session_id,job_data):
     conn = psycopg2.connect(database=db_name,user=db_user,host=db_host,port=db_port,password=db_password)
@@ -229,6 +264,17 @@ def search_jobs(category,duration1,duration2,payment1,payment2,location):
     cur.close()
     conn.close()
     return jobs
+
+def delete_job(job_id):
+    conn = psycopg2.connect(database=db_name,user=db_user,host=db_host,port=db_port,password=db_password)
+    cur = conn.cursor(cursor_factory=DictCursor)
+
+    query = "DELETE FROM jobs WHERE job_id=%s;"
+    cur.execute(query,(job_id,))
+
+    conn.commit()
+    cur.close()
+    conn.close()
 
 def insert_application_to_db(session_id,job_id):
     conn = psycopg2.connect(database=db_name,user=db_user,host=db_host,port=db_port,password=db_password)
@@ -447,3 +493,25 @@ def get_avg_rating(user_id):
     cur.close()
     conn.close()
     return avg_rating[0]
+
+def post_job_category(category):
+    conn = psycopg2.connect(database=db_name,user=db_user,host=db_host,port=db_port,password=db_password)
+    cur = conn.cursor(cursor_factory=DictCursor)
+
+    query = "INSERT INTO job_categories(category) VALUES(%s);"
+    cur.execute(query,(category,))
+    
+    conn.commit()
+    cur.close()
+    conn.close()
+
+def post_area(area):
+    conn = psycopg2.connect(database=db_name,user=db_user,host=db_host,port=db_port,password=db_password)
+    cur = conn.cursor(cursor_factory=DictCursor)
+
+    query = "INSERT INTO areas(area) VALUES(%s);"
+    cur.execute(query,(area,))
+    
+    conn.commit()
+    cur.close()
+    conn.close()
