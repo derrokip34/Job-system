@@ -51,23 +51,29 @@ def home():
     else:
         Button(form_frame,text="View Jobs",command=lambda:[]).place(x=20,y=30)
 
-    home_nav = Button(home_menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3)
-    home_nav.place(x=10,y=10)
-    login_nav = Button(home_menu_bar,background="lavender",width=15,height=3,text="Login",fg="black",bd=3,command=lambda: [home_frame.destroy(),home_menu_bar.destroy(),login_page()])
-    login_nav.place(x=10,y=90)
     if session["logged_in"] is True :
-        new1_nav = Button(home_menu_bar,background="lavender",width=15,height=3,text="Post Job",fg="black",bd=3,command=lambda: [home_frame.destroy(),home_menu_bar.destroy(),post_job_form()])
-        new1_nav.place(x=10,y=170)
+        home_nav = Button(home_menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3, command=lambda:[home_frame.destroy(),home_menu_bar.destroy(),home()])
+        home_nav.place(x=10,y=10)
+        new3_nav = Button(home_menu_bar,background="lavender",width=15,height=3,text="View Profile",fg="black",bd=3, command=lambda:[home_frame.destroy(),home_menu_bar.destroy(),profile_pg(session["user_id"])])
+        new3_nav.place(x=10,y=90)
+        
         if session["user_type"] is "job_seeker":
             new2_nav = Button(home_menu_bar,background="lavender",width=15,height=3,text="View Jobs",fg="black",bd=3,command=lambda: [home_frame.destroy(),home_menu_bar.destroy(),view_jobs()])
-            new2_nav.place(x=10,y=250)
+            new2_nav.place(x=10,y=170)
+            new4_nav = Button(home_menu_bar,background="lavender",width=15,height=3,text="Logout",fg="black",bd=3, command=lambda:[home_frame.destroy(),home_menu_bar.destroy(),logout()])
+            new4_nav.place(x=10,y=250)
         else:
             new2_nav = Button(home_menu_bar,background="lavender",width=15,height=3,text="View Jobs",fg="black",bd=3,command=lambda: [home_frame.destroy(),home_menu_bar.destroy(),job_posters_jobs_view()])
-            new2_nav.place(x=10,y=250)
-        new3_nav = Button(home_menu_bar,background="lavender",width=15,height=3,text="View Profile",fg="black",bd=3, command=lambda:[home_frame.destroy(),home_menu_bar.destroy(),profile_pg(session["user_id"])])
-        new3_nav.place(x=10,y=330)
-        new4_nav = Button(home_menu_bar,background="lavender",width=15,height=3,text="Logout",fg="black",bd=3, command=lambda:[home_frame.destroy(),home_menu_bar.destroy(),logout()])
-        new4_nav.place(x=10,y=410)
+            new2_nav.place(x=10,y=170)
+            new1_nav = Button(home_menu_bar,background="lavender",width=15,height=3,text="Post Job",fg="black",bd=3,command=lambda: [home_frame.destroy(),home_menu_bar.destroy(),post_job_form()])
+            new1_nav.place(x=10,y=250)
+            new4_nav = Button(home_menu_bar,background="lavender",width=15,height=3,text="Logout",fg="black",bd=3, command=lambda:[home_frame.destroy(),home_menu_bar.destroy(),logout()])
+            new4_nav.place(x=10,y=330)
+    else:
+        home_nav = Button(home_menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3)
+        home_nav.place(x=10,y=10)
+        login_nav = Button(home_menu_bar,background="lavender",width=15,height=3,text="Login",fg="black",bd=3,command=lambda: [home_frame.destroy(),home_menu_bar.destroy(),login_page()])
+        login_nav.place(x=10,y=90)
 
     home_pg.mainloop()
 
@@ -109,37 +115,53 @@ def login_page():
         input_email = login_email_entry.get()
         login_user,user_type = user.login(input_email,input_password)
         if login_user is not None:
-            session["username"] = login_user["email"]
-            session["user_id"] = login_user["id"]
-            session["logged_in"] = True
-            if user_type is "job_seeker":
-                session["category"] = login_user["category"]
+            if login_user["user_status"] == "active":
+                session["username"] = login_user["email"]
+                session["user_id"] = login_user["id"]
+                session["logged_in"] = True
+                if user_type is "job_seeker":
+                    session["category"] = login_user["category"]
+                else:
+                    session["category"] = None
+                session["user_type"] = user_type
+                session["session_id"] = login_user["session_id"]
+                msg = login_user["first_name"] + " " + login_user["last_name"] +" successfully logged in"
+                messagebox.showinfo('Login',msg)
+                login_frame.destroy()
+                login_menu_bar.destroy()
+                home()
             else:
-                session["category"] = None
-            session["user_type"] = user_type
-            session["session_id"] = login_user["session_id"]
-            msg = login_user["first_name"] + " " + login_user["last_name"] +" successfully logged in"
-            messagebox.showinfo('Login',msg)
-            login_frame.destroy()
-            login_menu_bar.destroy()
-            home()
+                msg1 = "Invalid username/password"
+                messagebox.showerror("Error", "User is inactive")
         else:
-            msg1 = "Invalid usermane/password"
+            msg1 = "Invalid username/password"
             messagebox.showinfo('message',msg1)
     
     Button(form_frame,background="grey",width=10,text="Login",command=lambda:[user_login()]).pack(fill=NONE,anchor=CENTER,pady=30)
 
-    home_nav = Button(login_menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3,command=lambda:[login_frame.destroy(),login_menu_bar.destroy(),home()])
-    home_nav.place(x=10,y=10)
-    reg_nav = Button(login_menu_bar,background="lavender",width=15,height=3,text="Register",fg="black",bd=3,command=lambda: [login_frame.destroy(),login_menu_bar.destroy(),registration_page()])
-    reg_nav.place(x=10,y=90)
-    if session["logged_in"] is True:
-        new1_nav = Button(login_menu_bar,background="lavender",width=15,height=3,text="Show Jobs",fg="black",bd=3,command=lambda: [login_frame.destroy(),login_menu_bar.destroy(),post_job_form()])
-        new1_nav.place(x=10,y=170)
-        new2_nav = Button(login_menu_bar,background="lavender",width=15,height=3,text="View Jobs",fg="black",bd=3,command=lambda: [login_frame.destroy(),login_menu_bar.destroy(),view_jobs()])
-        new2_nav.place(x=10,y=250)
-        new3_nav = Button(login_menu_bar,background="lavender",width=15,height=3,text="Logout",fg="black",bd=3,command=lambda:[login_frame.destroy(),login_menu_bar.destroy(),logout()])
-        new3_nav.place(x=10,y=330)
+    if session["logged_in"] is True :
+        home_nav = Button(login_menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3, command=lambda:[login_frame.destroy(),login_menu_bar.destroy(),home()])
+        home_nav.place(x=10,y=10)
+        new3_nav = Button(login_menu_bar,background="lavender",width=15,height=3,text="View Profile",fg="black",bd=3, command=lambda:[login_frame.destroy(),login_menu_bar.destroy(),profile_pg(session["user_id"])])
+        new3_nav.place(x=10,y=90)
+        
+        if session["user_type"] is "job_seeker":
+            new2_nav = Button(login_menu_bar,background="lavender",width=15,height=3,text="View Jobs",fg="black",bd=3,command=lambda: [login_frame.destroy(),login_menu_bar.destroy(),view_jobs()])
+            new2_nav.place(x=10,y=170)
+            new4_nav = Button(login_menu_bar,background="lavender",width=15,height=3,text="Logout",fg="black",bd=3, command=lambda:[login_frame.destroy(),login_menu_bar.destroy(),logout()])
+            new4_nav.place(x=10,y=250)
+        else:
+            new2_nav = Button(login_menu_bar,background="lavender",width=15,height=3,text="View Jobs",fg="black",bd=3,command=lambda: [login_frame.destroy(),login_menu_bar.destroy(),job_posters_jobs_view()])
+            new2_nav.place(x=10,y=170)
+            new1_nav = Button(login_menu_bar,background="lavender",width=15,height=3,text="Post Job",fg="black",bd=3,command=lambda: [login_frame.destroy(),login_menu_bar.destroy(),post_job_form()])
+            new1_nav.place(x=10,y=250)
+            new4_nav = Button(login_menu_bar,background="lavender",width=15,height=3,text="Logout",fg="black",bd=3, command=lambda:[login_frame.destroy(),login_menu_bar.destroy(),logout()])
+            new4_nav.place(x=10,y=330)
+    else:
+        home_nav = Button(login_menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3)
+        home_nav.place(x=10,y=10)
+        login_nav = Button(login_menu_bar,background="lavender",width=15,height=3,text="Login",fg="black",bd=3,command=lambda: [login_frame.destroy(),login_menu_bar.destroy(),login_page()])
+        login_nav.place(x=10,y=90)
 
     home_pg.mainloop()
 
@@ -317,17 +339,29 @@ def registration_page(user_type):
     submit_button = Button(form_frame,background="lavender",width=30,height=2,text="Enter personal details",command=lambda: [user_details_form()])
     submit_button.pack(fill=NONE,anchor=CENTER,pady=10)
 
-    home_nav = Button(registration_menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3,command=lambda:[registration_frame.destroy(),registration_menu_bar.destroy(),home()])
-    home_nav.place(x=10,y=10)
-    login_nav = Button(registration_menu_bar,background="lavender",width=15,height=3,text="Login",fg="black",bd=3,command=lambda: [registration_frame.destroy(),registration_menu_bar.destroy(),login_page()])
-    login_nav.place(x=10,y=90)
-    if session["logged_in"] is True:
-        new1_nav = Button(registration_menu_bar,background="lavender",width=15,height=3,text="Post Job",fg="black",bd=3)
-        new1_nav.place(x=10,y=170)
-        new2_nav = Button(registration_menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3)
-        new2_nav.place(x=10,y=250)
-        new3_nav = Button(registration_menu_bar,background="lavender",width=15,height=3,text="Logout",fg="black",bd=3,command=lambda:[registration_frame.destroy(),registration_menu_bar.destroy(),logout()])
-        new3_nav.place(x=10,y=330)
+    if session["logged_in"] is True :
+        home_nav = Button(registration_menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3, command=lambda:[registration_frame.destroy(),registration_menu_bar.destroy(),home()])
+        home_nav.place(x=10,y=10)
+        new3_nav = Button(registration_menu_bar,background="lavender",width=15,height=3,text="View Profile",fg="black",bd=3, command=lambda:[registration_frame.destroy(),registration_menu_bar.destroy(),profile_pg(session["user_id"])])
+        new3_nav.place(x=10,y=90)
+        
+        if session["user_type"] is "job_seeker":
+            new2_nav = Button(registration_menu_bar,background="lavender",width=15,height=3,text="View Jobs",fg="black",bd=3,command=lambda: [registration_frame.destroy(),registration_menu_bar.destroy(),view_jobs()])
+            new2_nav.place(x=10,y=170)
+            new4_nav = Button(registration_menu_bar,background="lavender",width=15,height=3,text="Logout",fg="black",bd=3, command=lambda:[registration_frame.destroy(),registration_menu_bar.destroy(),logout()])
+            new4_nav.place(x=10,y=250)
+        else:
+            new2_nav = Button(registration_menu_bar,background="lavender",width=15,height=3,text="View Jobs",fg="black",bd=3,command=lambda: [registration_frame.destroy(),registration_menu_bar.destroy(),job_posters_jobs_view()])
+            new2_nav.place(x=10,y=170)
+            new1_nav = Button(registration_menu_bar,background="lavender",width=15,height=3,text="Post Job",fg="black",bd=3,command=lambda: [registration_frame.destroy(),registration_menu_bar.destroy(),post_job_form()])
+            new1_nav.place(x=10,y=250)
+            new4_nav = Button(registration_menu_bar,background="lavender",width=15,height=3,text="Logout",fg="black",bd=3, command=lambda:[registration_frame.destroy(),registration_menu_bar.destroy(),logout()])
+            new4_nav.place(x=10,y=330)
+    else:
+        home_nav = Button(registration_menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3)
+        home_nav.place(x=10,y=10)
+        login_nav = Button(registration_menu_bar,background="lavender",width=15,height=3,text="Login",fg="black",bd=3,command=lambda: [registration_frame.destroy(),registration_menu_bar.destroy(),login_page()])
+        login_nav.place(x=10,y=90)
 
     home_pg.mainloop()
 
@@ -409,17 +443,24 @@ def post_job_form():
     post_job_button = Button(form_frame,background="lavender",width=15,text="Post Job",command=lambda: [save_job_data()])
     post_job_button.place(x=240,y=340)
 
-    home_nav = Button(post_job_menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3,command=lambda:[post_job_frame.destroy(),post_job_menu_bar.destroy(),home()])
-    home_nav.place(x=10,y=10)
-    login_nav = Button(post_job_menu_bar,background="lavender",width=15,height=3,text="Login",fg="black",bd=3,command=lambda: [post_job_frame.destroy(),post_job_menu_bar.destroy(),login_page()])
-    login_nav.place(x=10,y=90)
-    if session["logged_in"] is True:
-        new1_nav = Button(post_job_menu_bar,background="lavender",width=15,height=3,text="Post Job",fg="black",bd=3 )
-        new1_nav.place(x=10,y=170)
-        new2_nav = Button(post_job_menu_bar,background="lavender",width=15,height=3,text="View Jobs",fg="black",bd=3)
-        new2_nav.place(x=10,y=250)
-        new3_nav = Button(post_job_menu_bar,background="lavender",width=15,height=3,text="Logout",fg="black",bd=3,command=lambda:[post_job_frame.destroy(),post_job_menu_bar.destroy(),logout()])
-        new3_nav.place(x=10,y=330)
+    if session["logged_in"] is True :
+        home_nav = Button(post_job_menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3, command=lambda:[post_job_frame.destroy(),post_job_menu_bar.destroy(),home()])
+        home_nav.place(x=10,y=10)
+        new3_nav = Button(post_job_menu_bar,background="lavender",width=15,height=3,text="View Profile",fg="black",bd=3, command=lambda:[post_job_frame.destroy(),post_job_menu_bar.destroy(),profile_pg(session["user_id"])])
+        new3_nav.place(x=10,y=90)
+        
+        if session["user_type"] is "job_seeker":
+            new2_nav = Button(post_job_menu_bar,background="lavender",width=15,height=3,text="View Jobs",fg="black",bd=3,command=lambda: [post_job_frame.destroy(),post_job_menu_bar.destroy(),view_jobs()])
+            new2_nav.place(x=10,y=170)
+            new4_nav = Button(post_job_menu_bar,background="lavender",width=15,height=3,text="Logout",fg="black",bd=3, command=lambda:[post_job_frame.destroy(),post_job_menu_bar.destroy(),logout()])
+            new4_nav.place(x=10,y=250)
+        else:
+            new2_nav = Button(post_job_menu_bar,background="lavender",width=15,height=3,text="View Jobs",fg="black",bd=3,command=lambda: [post_job_frame.destroy(),post_job_menu_bar.destroy(),job_posters_jobs_view()])
+            new2_nav.place(x=10,y=170)
+            new1_nav = Button(post_job_menu_bar,background="lavender",width=15,height=3,text="Post Job",fg="black",bd=3,command=lambda: [post_job_frame.destroy(),post_job_menu_bar.destroy(),post_job_form()])
+            new1_nav.place(x=10,y=250)
+            new4_nav = Button(post_job_menu_bar,background="lavender",width=15,height=3,text="Logout",fg="black",bd=3, command=lambda:[post_job_frame.destroy(),post_job_menu_bar.destroy(),logout()])
+            new4_nav.place(x=10,y=330)
 
     home_pg.mainloop()
 
@@ -509,17 +550,24 @@ def update_job_form(job_id):
     update_job_button = Button(form_frame,background="lavender",width=15,text="Update Job",command=lambda: [update_job_data()])
     update_job_button.place(x=240,y=340)
 
-    home_nav = Button(update_job_menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3,command=lambda:[update_job_frame.destroy(),update_job_menu_bar.destroy(),home()])
-    home_nav.place(x=10,y=10)
-    login_nav = Button(update_job_menu_bar,background="lavender",width=15,height=3,text="Login",fg="black",bd=3,command=lambda: [update_job_frame.destroy(),update_job_menu_bar.destroy(),login_page()])
-    login_nav.place(x=10,y=90)
-    if session["logged_in"] is True:
-        new1_nav = Button(update_job_menu_bar,background="lavender",width=15,height=3,text="Post Job",fg="black",bd=3 )
-        new1_nav.place(x=10,y=170)
-        new2_nav = Button(update_job_menu_bar,background="lavender",width=15,height=3,text="View Jobs",fg="black",bd=3)
-        new2_nav.place(x=10,y=250)
-        new3_nav = Button(update_job_menu_bar,background="lavender",width=15,height=3,text="Logout",fg="black",bd=3,command=lambda:[update_job_frame.destroy(),update_job_menu_bar.destroy(),logout()])
-        new3_nav.place(x=10,y=330)
+    if session["logged_in"] is True :
+        home_nav = Button(update_job_menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3, command=lambda:[update_job_frame.destroy(),update_job_menu_bar.destroy(),home()])
+        home_nav.place(x=10,y=10)
+        new3_nav = Button(update_job_menu_bar,background="lavender",width=15,height=3,text="View Profile",fg="black",bd=3, command=lambda:[update_job_frame.destroy(),update_job_menu_bar.destroy(),profile_pg(session["user_id"])])
+        new3_nav.place(x=10,y=90)
+        
+        if session["user_type"] is "job_seeker":
+            new2_nav = Button(update_job_menu_bar,background="lavender",width=15,height=3,text="View Jobs",fg="black",bd=3,command=lambda: [update_job_frame.destroy(),update_job_menu_bar.destroy(),view_jobs()])
+            new2_nav.place(x=10,y=170)
+            new4_nav = Button(update_job_menu_bar,background="lavender",width=15,height=3,text="Logout",fg="black",bd=3, command=lambda:[update_job_frame.destroy(),update_job_menu_bar.destroy(),logout()])
+            new4_nav.place(x=10,y=250)
+        else:
+            new2_nav = Button(update_job_menu_bar,background="lavender",width=15,height=3,text="View Jobs",fg="black",bd=3,command=lambda: [update_job_frame.destroy(),update_job_menu_bar.destroy(),job_posters_jobs_view()])
+            new2_nav.place(x=10,y=170)
+            new1_nav = Button(update_job_menu_bar,background="lavender",width=15,height=3,text="Post Job",fg="black",bd=3,command=lambda: [update_job_frame.destroy(),update_job_menu_bar.destroy(),post_job_form()])
+            new1_nav.place(x=10,y=250)
+            new4_nav = Button(update_job_menu_bar,background="lavender",width=15,height=3,text="Logout",fg="black",bd=3, command=lambda:[update_job_frame.destroy(),update_job_menu_bar.destroy(),logout()])
+            new4_nav.place(x=10,y=330)
 
     home_pg.mainloop()
 
@@ -670,17 +718,24 @@ def view_jobs():
     scrollbar.config(command=form_frame.yview)
     form_frame.config(yscrollcommand=scrollbar.set)
 
-    home_nav = Button(view_jobs_menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=5,command=lambda:[view_jobs_frame.destroy(),view_jobs_menu_bar.destroy(),home()])
-    home_nav.place(x=10,y=10)
-    login_nav = Button(view_jobs_menu_bar,background="lavender",width=15,height=3,text="Login",fg="black",bd=3,command=lambda: [view_jobs_frame.destroy(),view_jobs_menu_bar.destroy(),login_page()])
-    login_nav.place(x=10,y=90)
-    if session["logged_in"] is True:
-        new1_nav = Button(view_jobs_menu_bar,background="lavender",width=15,height=3,text="Post Job",fg="black",bd=3)
-        new1_nav.place(x=10,y=170)
-        new2_nav = Button(view_jobs_menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3)
-        new2_nav.place(x=10,y=250)
-        new3_nav = Button(view_jobs_menu_bar,background="lavender",width=15,height=3,text="Logout",fg="black",bd=3,command=lambda:[view_jobs_frame.destroy(),view_jobs_menu_bar.destroy(),logout()])
-        new3_nav.place(x=10,y=330)
+    if session["logged_in"] is True :
+        home_nav = Button(view_jobs_menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3, command=lambda:[view_jobs_frame.destroy(),view_jobs_menu_bar.destroy(),home()])
+        home_nav.place(x=10,y=10)
+        new3_nav = Button(view_jobs_menu_bar,background="lavender",width=15,height=3,text="View Profile",fg="black",bd=3, command=lambda:[view_jobs_frame.destroy(),view_jobs_menu_bar.destroy(),profile_pg(session["user_id"])])
+        new3_nav.place(x=10,y=90)
+        
+        if session["user_type"] is "job_seeker":
+            new2_nav = Button(view_jobs_menu_bar,background="lavender",width=15,height=3,text="View Jobs",fg="black",bd=3,command=lambda: [view_jobs_frame.destroy(),view_jobs_menu_bar.destroy(),view_jobs()])
+            new2_nav.place(x=10,y=170)
+            new4_nav = Button(view_jobs_menu_bar,background="lavender",width=15,height=3,text="Logout",fg="black",bd=3, command=lambda:[view_jobs_frame.destroy(),view_jobs_menu_bar.destroy(),logout()])
+            new4_nav.place(x=10,y=250)
+        else:
+            new2_nav = Button(view_jobs_menu_bar,background="lavender",width=15,height=3,text="View Jobs",fg="black",bd=3,command=lambda: [view_jobs_frame.destroy(),view_jobs_menu_bar.destroy(),job_posters_jobs_view()])
+            new2_nav.place(x=10,y=170)
+            new1_nav = Button(view_jobs_menu_bar,background="lavender",width=15,height=3,text="Post Job",fg="black",bd=3,command=lambda: [view_jobs_frame.destroy(),view_jobs_menu_bar.destroy(),post_job_form()])
+            new1_nav.place(x=10,y=250)
+            new4_nav = Button(view_jobs_menu_bar,background="lavender",width=15,height=3,text="Logout",fg="black",bd=3, command=lambda:[view_jobs_frame.destroy(),view_jobs_menu_bar.destroy(),logout()])
+            new4_nav.place(x=10,y=330)
 
     home_pg.mainloop()
 
@@ -863,17 +918,24 @@ def job_posters_jobs_view():
     scrollbar.config(command=form_frame.yview)
     form_frame.config(yscrollcommand=scrollbar.set)
 
-    home_nav = Button(view_jobs_menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=5,command=lambda:[view_jobs_frame.destroy(),view_jobs_menu_bar.destroy(),home()])
-    home_nav.place(x=10,y=10)
-    login_nav = Button(view_jobs_menu_bar,background="lavender",width=15,height=3,text="Login",fg="black",bd=3,command=lambda: [view_jobs_frame.destroy(),view_jobs_menu_bar.destroy(),login_page()])
-    login_nav.place(x=10,y=90)
-    if session["logged_in"] is True:
-        new1_nav = Button(view_jobs_menu_bar,background="lavender",width=15,height=3,text="Post Job",fg="black",bd=3)
-        new1_nav.place(x=10,y=170)
-        new2_nav = Button(view_jobs_menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3)
-        new2_nav.place(x=10,y=250)
-        new3_nav = Button(view_jobs_menu_bar,background="lavender",width=15,height=3,text="Logout",fg="black",bd=3,command=lambda:[view_jobs_frame.destroy(),view_jobs_menu_bar.destroy(),logout()])
-        new3_nav.place(x=10,y=330)
+    if session["logged_in"] is True :
+        home_nav = Button(view_jobs_menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3, command=lambda:[view_jobs_frame.destroy(),view_jobs_menu_bar.destroy(),home()])
+        home_nav.place(x=10,y=10)
+        new3_nav = Button(view_jobs_menu_bar,background="lavender",width=15,height=3,text="View Profile",fg="black",bd=3, command=lambda:[view_jobs_frame.destroy(),view_jobs_menu_bar.destroy(),profile_pg(session["user_id"])])
+        new3_nav.place(x=10,y=90)
+        
+        if session["user_type"] is "job_seeker":
+            new2_nav = Button(view_jobs_menu_bar,background="lavender",width=15,height=3,text="View Jobs",fg="black",bd=3,command=lambda: [view_jobs_frame.destroy(),view_jobs_menu_bar.destroy(),view_jobs()])
+            new2_nav.place(x=10,y=170)
+            new4_nav = Button(view_jobs_menu_bar,background="lavender",width=15,height=3,text="Logout",fg="black",bd=3, command=lambda:[view_jobs_frame.destroy(),view_jobs_menu_bar.destroy(),logout()])
+            new4_nav.place(x=10,y=250)
+        else:
+            new2_nav = Button(view_jobs_menu_bar,background="lavender",width=15,height=3,text="View Jobs",fg="black",bd=3,command=lambda: [view_jobs_frame.destroy(),view_jobs_menu_bar.destroy(),job_posters_jobs_view()])
+            new2_nav.place(x=10,y=170)
+            new1_nav = Button(view_jobs_menu_bar,background="lavender",width=15,height=3,text="Post Job",fg="black",bd=3,command=lambda: [view_jobs_frame.destroy(),view_jobs_menu_bar.destroy(),post_job_form()])
+            new1_nav.place(x=10,y=250)
+            new4_nav = Button(view_jobs_menu_bar,background="lavender",width=15,height=3,text="Logout",fg="black",bd=3, command=lambda:[view_jobs_frame.destroy(),view_jobs_menu_bar.destroy(),logout()])
+            new4_nav.place(x=10,y=330)
 
     home_pg.mainloop()
 
@@ -965,17 +1027,24 @@ def job_details_page(job_id):
     no_of_applicants_value.place(x=150,y=300)
     no_of_applicants_value.configure(state="disabled")
 
-    home_nav = Button(job_details_menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=5,command=lambda:[job_details_frame.destroy(),job_details_menu_bar.destroy(),home()])
-    home_nav.place(x=10,y=10)
-    login_nav = Button(job_details_menu_bar,background="lavender",width=15,height=3,text="Login",fg="black",bd=3,command=lambda: [job_details_frame.destroy(),job_details_menu_bar.destroy(),login_page()])
-    login_nav.place(x=10,y=90)
-    if session["logged_in"] is True:
-        new1_nav = Button(job_details_menu_bar,background="lavender",width=15,height=3,text="Post Job",fg="black",bd=3)
-        new1_nav.place(x=10,y=170)
-        new2_nav = Button(job_details_menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3)
-        new2_nav.place(x=10,y=250)
-        new3_nav = Button(job_details_menu_bar,background="lavender",width=15,height=3,text="Logout",fg="black",bd=3,command=lambda:[job_details_frame.destroy(),job_details_menu_bar.destroy(),logout()])
-        new3_nav.place(x=10,y=330)
+    if session["logged_in"] is True :
+        home_nav = Button(job_details_menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3, command=lambda:[job_details_frame.destroy(),job_details_menu_bar.destroy(),home()])
+        home_nav.place(x=10,y=10)
+        new3_nav = Button(job_details_menu_bar,background="lavender",width=15,height=3,text="View Profile",fg="black",bd=3, command=lambda:[job_details_frame.destroy(),job_details_menu_bar.destroy(),profile_pg(session["user_id"])])
+        new3_nav.place(x=10,y=90)
+        
+        if session["user_type"] is "job_seeker":
+            new2_nav = Button(job_details_menu_bar,background="lavender",width=15,height=3,text="View Jobs",fg="black",bd=3,command=lambda: [job_details_frame.destroy(),job_details_menu_bar.destroy(),view_jobs()])
+            new2_nav.place(x=10,y=170)
+            new4_nav = Button(job_details_menu_bar,background="lavender",width=15,height=3,text="Logout",fg="black",bd=3, command=lambda:[job_details_frame.destroy(),job_details_menu_bar.destroy(),logout()])
+            new4_nav.place(x=10,y=250)
+        else:
+            new2_nav = Button(job_details_menu_bar,background="lavender",width=15,height=3,text="View Jobs",fg="black",bd=3,command=lambda: [job_details_frame.destroy(),job_details_menu_bar.destroy(),job_posters_jobs_view()])
+            new2_nav.place(x=10,y=170)
+            new1_nav = Button(job_details_menu_bar,background="lavender",width=15,height=3,text="Post Job",fg="black",bd=3,command=lambda: [job_details_frame.destroy(),job_details_menu_bar.destroy(),post_job_form()])
+            new1_nav.place(x=10,y=250)
+            new4_nav = Button(job_details_menu_bar,background="lavender",width=15,height=3,text="Logout",fg="black",bd=3, command=lambda:[job_details_frame.destroy(),job_details_menu_bar.destroy(),logout()])
+            new4_nav.place(x=10,y=330)
 
     home_pg.mainloop()
 
@@ -1301,23 +1370,24 @@ def profile_pg(user_id):
    
         update_profile_page.mainloop()
 
-    home_nav = Button(profile_page_menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=5,command=lambda:[profile_page_frame.destroy(),profile_page_menu_bar.destroy(),home()])
-    home_nav.place(x=10,y=10)
-    login_nav = Button(profile_page_menu_bar,background="lavender",width=15,height=3,text="Login",fg="black",bd=3,command=lambda: [profile_page_frame.destroy(),profile_page_menu_bar.destroy(),login_page()])
-    login_nav.place(x=10,y=90)
-    if session["logged_in"] is True:
-        if session["user_type"] is "job_poster":
-            new1_nav = Button(profile_page_menu_bar,background="lavender",width=15,height=3,text="Post Job",fg="black",bd=3)
-            new1_nav.place(x=10,y=170)
-            new2_nav = Button(profile_page_menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3)
-            new2_nav.place(x=10,y=250)
-            new3_nav = Button(profile_page_menu_bar,background="lavender",width=15,height=3,text="Logout",fg="black",bd=3,command=lambda:[profile_page_frame.destroy(),profile_page_menu_bar.destroy(),logout()])
-            new3_nav.place(x=10,y=330)
-        elif session["user_type"] is "job_seeker":
-            new1_nav = Button(profile_page_menu_bar,background="lavender",width=15,height=3,text="View Jobs",fg="black",bd=3)
-            new1_nav.place(x=10,y=170)
-            new3_nav = Button(profile_page_menu_bar,background="lavender",width=15,height=3,text="Logout",fg="black",bd=3,command=lambda:[profile_page_frame.destroy(),profile_page_menu_bar.destroy(),logout()])
-            new3_nav.place(x=10,y=250)
+    if session["logged_in"] is True :
+        home_nav = Button(profile_page_menu_bar,background="lavender",width=15,height=3,text="Home",fg="black",bd=3, command=lambda:[profile_page_frame.destroy(),profile_page_menu_bar.destroy(),home()])
+        home_nav.place(x=10,y=10)
+        new3_nav = Button(profile_page_menu_bar,background="lavender",width=15,height=3,text="View Profile",fg="black",bd=3, command=lambda:[profile_page_frame.destroy(),profile_page_menu_bar.destroy(),profile_pg(session["user_id"])])
+        new3_nav.place(x=10,y=90)
+        
+        if session["user_type"] is "job_seeker":
+            new2_nav = Button(profile_page_menu_bar,background="lavender",width=15,height=3,text="View Jobs",fg="black",bd=3,command=lambda: [profile_page_frame.destroy(),profile_page_menu_bar.destroy(),view_jobs()])
+            new2_nav.place(x=10,y=170)
+            new4_nav = Button(profile_page_menu_bar,background="lavender",width=15,height=3,text="Logout",fg="black",bd=3, command=lambda:[profile_page_frame.destroy(),profile_page_menu_bar.destroy(),logout()])
+            new4_nav.place(x=10,y=250)
+        else:
+            new2_nav = Button(profile_page_menu_bar,background="lavender",width=15,height=3,text="View Jobs",fg="black",bd=3,command=lambda: [profile_page_frame.destroy(),profile_page_menu_bar.destroy(),job_posters_jobs_view()])
+            new2_nav.place(x=10,y=170)
+            new1_nav = Button(profile_page_menu_bar,background="lavender",width=15,height=3,text="Post Job",fg="black",bd=3,command=lambda: [profile_page_frame.destroy(),profile_page_menu_bar.destroy(),post_job_form()])
+            new1_nav.place(x=10,y=250)
+            new4_nav = Button(profile_page_menu_bar,background="lavender",width=15,height=3,text="Logout",fg="black",bd=3, command=lambda:[profile_page_frame.destroy(),profile_page_menu_bar.destroy(),logout()])
+            new4_nav.place(x=10,y=330)
 
     home_pg.mainloop()
 
