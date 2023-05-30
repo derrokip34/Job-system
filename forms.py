@@ -749,7 +749,7 @@ def job_posters_jobs_view():
     view_jobs_frame.pack(expand=True,fill=BOTH)
 
     select_jobs_frame = Frame(view_jobs_frame,bg="gray")
-    select_jobs_frame.pack(fill=X,side=TOP)
+    select_jobs_frame.pack(side=TOP)
 
     jobs_done_button = Button(select_jobs_frame,text="Jobs Completed",bg="grey",fg="black",command=lambda:[create_cards_funtion("true")])
     jobs_done_button.pack(side=LEFT,padx=10,pady=25)
