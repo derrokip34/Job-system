@@ -196,14 +196,11 @@ def users_management():
     nav_frame.pack(side="top", pady=10, padx=90)
 
     # Create the buttons in the navigation bar
-    users_management_button = Button(nav_frame, text="Manage Users",width=12,command=lambda:[users_frame.destroy(),users_management()])
+    users_management_button = Button(nav_frame, text="Manage Users",width=12,command=lambda:[])
     users_management_button.pack(side="left", padx=10,pady=10)
 
     jobs_management_button = Button(nav_frame, text="Manage Jobs",width=12,command=lambda:[users_frame.destroy(),jobs_management()])
     jobs_management_button.pack(side="left", padx=10,pady=10)
-
-    admin_details_button = Button(nav_frame, text="Log Details",width=12,command=lambda:[users_frame.destroy(),log_details()])
-    admin_details_button.pack(side="left", padx=10,pady=10)
 
     scrollbar = Scrollbar(users_frame)
     scrollbar.pack(side="right",fill='y')
@@ -248,9 +245,9 @@ def users_management():
             new_user_type = "Job Poster"
         user_type_label = Label(user_card,background="white",text=f"User Type: {new_user_type}",font=("Arial",'12'))
         user_type_label.pack(side=TOP,anchor=W)
-        update_user_button = Button(user_card,text="Update User",bg="blue",fg="white",command=lambda:[users_frame.destroy(),update_profile_window(user_type,user_id)])
+        update_user_button = Button(user_card,text="Update User",bg="blue",fg="white",command=lambda:[update_profile_window(user_type,user_id)])
         update_user_button.pack(side=RIGHT,padx=10,pady=20)
-        delete_user_button = Button(user_card,text="Delete User",bg="red",fg="white",command=lambda:[users_frame.destroy(),delete_user_function(user_type,user_id)])
+        delete_user_button = Button(user_card,text="Delete User",bg="red",fg="white",command=lambda:[delete_user_function(user_type,user_id)])
         delete_user_button.pack(side=RIGHT,padx=10,pady=20)
 
     cards =[]
@@ -275,12 +272,14 @@ def users_management():
         confirm_label.pack(anchor="center", pady=20)
         
         def confirm_delete():
+            users_frame.destroy()
             delete_user(user_type,user_id)
             messagebox.showinfo("User Deleted","User Deleted successfully")
             confirm_window.destroy()
             users_management()
         
         def cancel_delete():
+            users_frame.destroy()
             confirm_window.destroy()
             users_management()
         
@@ -337,6 +336,7 @@ def users_management():
             status_var.set(0)
 
         def update_profile():
+            users_frame.destroy()
             if status_var.get() == 1:
                 user_status = "active"
             else:
@@ -369,11 +369,8 @@ def jobs_management():
     users_management_button = Button(nav_frame, text="Manage Users",width=12,command=lambda:[jobs_frame.destroy(),users_management()])
     users_management_button.pack(side="left", padx=10,pady=10)
 
-    jobs_management_button = Button(nav_frame, text="Manage Jobs",width=12,command=lambda:[jobs_frame.destroy(),jobs_management()])
+    jobs_management_button = Button(nav_frame, text="Manage Jobs",width=12,command=lambda:[])
     jobs_management_button.pack(side="left", padx=10,pady=10)
-
-    admin_details_button = Button(nav_frame, text="Log Details",width=12,command=lambda:[jobs_frame.destroy(),log_details()])
-    admin_details_button.pack(side="left", padx=10,pady=10)
 
     scrollbar = Scrollbar(jobs_frame)
     scrollbar.pack(side="right",fill='y')
@@ -387,11 +384,11 @@ def jobs_management():
     add_buttons_frame = Frame(inner_frame,bg="gray")
     add_buttons_frame.pack(fill=X)
 
-    add_job_poster_button = Button(add_buttons_frame,text="Add Job Category",width=15,command=lambda:[])
-    add_job_poster_button.pack(side=LEFT,padx=10)
+    add_category_button = Button(add_buttons_frame,text="Add Job Category",width=15,command=lambda:[add_category()])
+    add_category_button.pack(side=LEFT,padx=10)
 
-    add_job_poster_button = Button(add_buttons_frame,text="Add Area/Location",width=15,command=lambda:[])
-    add_job_poster_button.pack(side=LEFT,padx=10)
+    add_area_button = Button(add_buttons_frame,text="Add Area/Location",width=15,command=lambda:[add_area()])
+    add_area_button.pack(side=LEFT,padx=10)
 
     entry_frame = Frame(inner_frame, bg="gray")
     entry_frame.pack(fill="x")
@@ -417,9 +414,7 @@ def jobs_management():
         job_category_label.pack(anchor=W)
         posted_on_label = Label(job_card,background="white",text="Posted on " + str(date_posted),width=50,height=2,font=("Arial",'12', "italic"),justify=LEFT,fg="black")
         posted_on_label.pack(anchor=W)
-        update_job_button = Button(job_card,text="Update Job",bg="blue",fg="white",command=lambda:[])
-        update_job_button.pack(side=RIGHT,padx=10,pady=5)
-        delete_job_button = Button(job_card,text="Delete Job",bg="red",fg="white",command=lambda:[])
+        delete_job_button = Button(job_card,text="Delete Job",bg="red",fg="white",command=lambda:[delete_job_function(job_id)])
         delete_job_button.pack(side=RIGHT,padx=10,pady=5)
 
     cards =[]
@@ -430,38 +425,77 @@ def jobs_management():
         card = create_card(inner_frame,job["job_id"],job["job_category"],job["date_posted"])
         cards.append(card)
 
+    def delete_job_function(job_id):
+        confirm_window = Tk()
+        confirm_window.geometry("200x100")
+        confirm_window.title("Confirm deletion")
+        
+        confirm_label = Label(confirm_window, text="Are you sure you want to delete?")
+        confirm_label.pack(anchor="center", pady=20)
+        
+        def confirm_delete():
+            jobs_frame.destroy()
+            delete_job(job_id)
+            messagebox.showinfo("User Deleted","User Deleted successfully")
+            confirm_window.destroy()
+            jobs_management()
+        
+        def cancel_delete():
+            jobs_frame.destroy()
+            confirm_window.destroy()
+            jobs_management()
+        
+        yes_button = Button(confirm_window, text="Yes", command=confirm_delete)
+        yes_button.pack(side="left", padx=10,anchor=CENTER)
+        
+        no_button = Button(confirm_window, text="No", command=cancel_delete)
+        no_button.pack(side="left", padx=10,anchor=CENTER)
+        
+        confirm_window.mainloop()
+
+    def add_area():
+        post_area_window = Tk()
+        post_area_window.geometry("200x200")
+        post_area_window.title("Post Area")
+
+        area_entry = Entry(post_area_window, width=20)
+        area_entry.pack(pady=20)
+
+        area_button = Button(post_area_window, text="Post", width=10,command=lambda:[post_area()])
+        area_button.pack()
+
+        def post_area():
+            jobs_frame.destroy
+            post_area_in_db(area_entry.get())
+            post_area_window.destroy()
+            jobs_management()
+
+        post_area_window.mainloop()
+
+    def add_category():
+        post_category_window = Tk()
+        post_category_window.geometry("200x200")
+        post_category_window.title("Post Area")
+
+        category_entry = Entry(post_category_window, width=20)
+        category_entry.pack(pady=20)
+
+        area_button = Button(post_category_window, text="Post", width=10,command=lambda:[post_category()])
+        area_button.pack()
+
+        def post_category():
+            jobs_frame.destroy
+            post_job_category(category_entry.get())
+            post_category_window.destroy()
+            jobs_management()
+
+        post_category_window.mainloop()
+
     form_frame.update_idletasks()
     form_frame.configure(scrollregion=form_frame.bbox('all'))
     form_frame.yview_moveto(0.0)
     scrollbar.config(command=form_frame.yview)
     form_frame.config(yscrollcommand=scrollbar.set)
-
-    admin_page.mainloop()
-
-def log_details():
-
-    admin_page.title("Log Details")
-
-    jobs_frame = Frame(admin_page,bg="wheat",borderwidth=10,width=550,height=1280)
-    jobs_frame.pack(expand=True,fill=BOTH)
-
-    form_frame = Frame(jobs_frame,bg="gray",borderwidth=10,height=1280)
-    form_frame.pack(expand=True,fill=BOTH,padx=20,pady=20)
-
-    nav_frame = Frame(form_frame, bg="light gray")
-    nav_frame.pack(side="top", padx=90)
-
-    # Create the buttons in the navigation bar
-    users_management_button = Button(nav_frame, text="Manage Users",width=12,command=lambda:[jobs_frame.destroy(),users_management()])
-    users_management_button.pack(side="left", padx=10,pady=10)
-
-    jobs_management_button = Button(nav_frame, text="Manage Jobs",width=12,command=lambda:[jobs_frame.destroy(),jobs_management()])
-    jobs_management_button.pack(side="left", padx=10,pady=10)
-
-    admin_details_button = Button(nav_frame, text="Manage Jobs",width=12,command=lambda:[jobs_frame.destroy(),log_details()])
-    admin_details_button.pack(side="left", padx=10,pady=10)
-
-
 
     admin_page.mainloop()
 

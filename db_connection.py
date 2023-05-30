@@ -505,7 +505,7 @@ def post_job_category(category):
     cur.close()
     conn.close()
 
-def post_area(area):
+def post_area_in_db(area):
     conn = psycopg2.connect(database=db_name,user=db_user,host=db_host,port=db_port,password=db_password)
     cur = conn.cursor(cursor_factory=DictCursor)
 
