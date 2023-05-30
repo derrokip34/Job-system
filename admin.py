@@ -242,7 +242,7 @@ def users_management():
         user_label.pack(side=TOP,anchor=W)
         user_status_label = Label(user_card,background="white",text=f"Status: {user_status}",font=("Arial",'12'))
         user_status_label.pack(side=TOP,anchor=W)
-        if user_type is "job_seeker":
+        if user_type == "job_seeker":
             new_user_type = "Job Seeker"
         else:
             new_user_type = "Job Poster"
@@ -293,7 +293,7 @@ def users_management():
         confirm_window.mainloop()
 
     def update_profile_window(user_type,user_id):
-        if user_type is "job_seeker":
+        if user_type == "job_seeker":
             users_profile = user.get_job_seeker_dict(user_id)
         else:
             users_profile = user.get_job_poster_dict(user_id)
