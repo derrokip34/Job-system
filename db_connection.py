@@ -26,7 +26,6 @@ def save_job_seeker_to_db(data):
 def save_job_poster_to_db(data):
     conn = psycopg2.connect(database=db_name,user=db_user,host=db_host,port=db_port,password=db_password)
     cur = conn.cursor()
-    session_id = str(uuid.uuid4())
     query = "INSERT INTO job_posters (first_name,last_name,email,phone_num,gender,dob,password,location) VALUES(%s,%s,%s,%s,%s,%s,%s,%s);"
     cur.execute(query, (data["first_name"],data["last_name"],data["email"],data["phone_no"],data["gender"],data["dob"],data["password"],data["area"]))
     conn.commit()
@@ -515,3 +514,34 @@ def post_area(area):
     conn.commit()
     cur.close()
     conn.close()
+
+def register_admin(admin_data):
+    conn = psycopg2.connect(database=db_name,user=db_user,host=db_host,port=db_port,password=db_password)
+    cur = conn.cursor(cursor_factory=DictCursor)
+
+    account_creation_time = datetime.now()
+
+    query = "INSERT INTO admins(first_name,last_name,email,password,created_at) VALUES(%s,%s,%s,%s,%s);"
+    cur.execute(query,(admin_data["first_name"],admin_data["last_name"],admin_data["email"],admin_data["password"],account_creation_time,))
+    
+    conn.commit()
+    cur.close()
+    conn.close()
+
+def login_admin(email,password):
+    conn = psycopg2.connect(database=db_name,user=db_user,host=db_host,port=db_port,password=db_password)
+    cur = conn.cursor(cursor_factory=DictCursor)
+
+    login_time = datetime.now()
+
+    query = """
+            UPDATE admins SET login_time=%s
+            WHERE email=%s AND password=%s;
+            SELECT * FROM admins WHERE email=%s AND password=%s;
+            """
+    cur.execute(query,(login_time,email,password,email,password))
+    admin = cur.fetchone()
+    conn.commit()
+    cur.close()
+    conn.close()
+    return admin

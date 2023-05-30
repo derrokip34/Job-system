@@ -93,6 +93,15 @@ def create_db_tables():
                     area_id SERIAL PRIMARY KEY,
                     area VARCHAR(40)
                 );
+                CREATE TABLE admins (
+                    id SERIAL PRIMARY KEY,
+                    first_name VARCHAR(50) NOT NULL,
+                    last_name VARCHAR(50) NOT NULL,
+                    email VARCHAR(100) NOT NULL,
+                    password VARCHAR(70) NOT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    login_time TIMESTAMP
+                );
                 """
 
         cur.execute(query)
