@@ -693,23 +693,23 @@ def job_posters_jobs_view():
     view_jobs_frame = Frame(home_pg,bg="wheat",borderwidth=10,width=550,height=1280)
     view_jobs_frame.pack(expand=True,fill=BOTH)
 
+    select_jobs_frame = Frame(view_jobs_frame,bg="gray")
+    select_jobs_frame.pack(fill=X,side=TOP)
+
+    jobs_done_button = Button(select_jobs_frame,text="Jobs Completed",bg="grey",fg="black",command=lambda:[create_cards_funtion("true")])
+    jobs_done_button.pack(side=LEFT,padx=10,pady=25)
+
+    jobs_not_done_button = Button(select_jobs_frame,text="Jobs Not Completed",bg="grey",fg="black",command=lambda:[create_cards_funtion("false")])
+    jobs_not_done_button.pack(side=LEFT,padx=10,pady=25)
+
     scrollbar = Scrollbar(view_jobs_frame)
     scrollbar.pack(side="right",fill='y')
 
     form_frame = Canvas(view_jobs_frame,bg="gray",borderwidth=10)
-    form_frame.pack(expand=True,fill=BOTH,padx=20,pady=20)
+    form_frame.pack(expand=True,fill=BOTH,padx=20)
 
     inner_frame = Frame(form_frame,bg="gray")
     form_frame.create_window((10, 0), window=inner_frame, anchor="center")
-
-    select_jobs_frame = Frame(inner_frame,bg="gray")
-    select_jobs_frame.pack(fill=X,side=TOP)
-
-    jobs_done_button = Button(select_jobs_frame,text="Jobs Completed",bg="grey",fg="black",command=lambda:[create_cards_funtion("true")])
-    jobs_done_button.pack(side=LEFT,padx=10)
-
-    jobs_not_done_button = Button(select_jobs_frame,text="Jobs Not Completed",bg="grey",fg="black",command=lambda:[create_cards_funtion("false")])
-    jobs_not_done_button.pack(side=LEFT,padx=10)
 
     def display_applicants(job_id):
         display_applicants_window = Tk()

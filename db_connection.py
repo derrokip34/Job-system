@@ -128,7 +128,7 @@ def get_job_posters():
     conn = psycopg2.connect(database=db_name,user=db_user,host=db_host,port=db_port,password=db_password)
     cur = conn.cursor(cursor_factory=DictCursor)
 
-    query = "SELECT id,first_name,last_name,email FROM job_posters;"
+    query = "SELECT * FROM job_posters;"
     cur.execute(query)
     users = cur.fetchall()
 
@@ -141,7 +141,7 @@ def get_job_seekers():
     conn = psycopg2.connect(database=db_name,user=db_user,host=db_host,port=db_port,password=db_password)
     cur = conn.cursor(cursor_factory=DictCursor)
 
-    query = "SELECT id,first_name,last_name,email FROM job_seekers;"
+    query = "SELECT * FROM job_seekers;"
     cur.execute(query)
     users = cur.fetchall()
 
@@ -154,10 +154,11 @@ def delete_user(user_type,user_id):
     conn = psycopg2.connect(database=db_name,user=db_user,host=db_host,port=db_port,password=db_password)
     cur = conn.cursor(cursor_factory=DictCursor)
 
-    if user_type == "job_posters":
+    if user_type == "job_poster":
         query = "DELETE FROM job_posters WHERE id=%s;"
-    elif user_type == "job_seekers":
+    else:
         query = "DELETE FROM job_seekers WHERE id=%s;"
+        
     cur.execute(query,(user_id,))
 
     conn.commit()
@@ -168,19 +169,19 @@ def update_user_status(user_type,user_id,user_status):
     conn = psycopg2.connect(database=db_name,user=db_user,host=db_host,port=db_port,password=db_password)
     cur = conn.cursor(cursor_factory=DictCursor)
 
-    if user_type == "job_posters":
+    if user_type == "job_poster":
         query = """
                 UPDATE job_posters
                 SET user_status=%s
                 WHERE id=%s;
                 """
-    elif user_type == "job_seekers":
+    elif user_type == "job_seeker":
         query = """
                 UPDATE job_seekers
                 SET user_status=%s
                 WHERE id=%s;
                 """
-    cur.execute(query,(user_id,user_status,))
+    cur.execute(query,(user_status,user_id,))
 
     conn.commit()
     cur.close()
